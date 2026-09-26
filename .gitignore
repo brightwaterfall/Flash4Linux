@@ -7,3 +7,7 @@ tools/python312/
 tools/python312-embed.zip
 tools/get-pip.py
 tools/ui_test_image.png
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
