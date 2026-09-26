@@ -10,13 +10,8 @@ QMAKE_CFLAGS += -w -fpermissive
 QMAKE_CXXFLAGS += -w -fpermissive -std=c++11
 
 INCLUDEPATH += .
-DESTDIR = $$PWD
-# MinGW's "ar -M" script splits paths that contain spaces.
-DOLLAR = $
-MAKE_OBJECTS = ~(OBJECTS)
-MAKE_OBJECTS = $$replace(MAKE_OBJECTS, ~, $$DOLLAR)
-LIBFILE = $$shell_quote($$clean_path($$DESTDIR/lib$${TARGET}.a))
-QMAKE_POST_LINK = ar rcs $$LIBFILE $$MAKE_OBJECTS
+# Keep the archive path relative. MinGW ar -M splits an absolute path that contains spaces.
+DESTDIR = libout
 CONFIG += release warn_off staticlib c++11
 CONFIG -= debug warn_on 
 TEMPLATE = lib 

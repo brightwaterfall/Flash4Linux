@@ -15,8 +15,8 @@ CONFIG += release
 QMAKE_CXXFLAGS += -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-sign-compare -Wno-deprecated-declarations -Wno-deprecated -Wno-unknown-pragmas -Wno-reorder -Wno-unused-function -Wno-comment -Wno-write-strings
 DESTDIR = $$PWD/../bin
 TARGET = f4l
-LIBS += -L$$PWD/flagStonePort/transform-util-cxx/transform-util -ltransform-util \
-        -L$$PWD/flagStonePort/transform-cxx-bsd/transform -ltransform \
+LIBS += -L$$OUT_PWD/flagStonePort/transform-util-cxx/transform-util/libout -ltransform-util \
+        -L$$OUT_PWD/flagStonePort/transform-cxx-bsd/transform/libout -ltransform \
         -lz
 
 HEADERS += qt3/qt3widgets.h \
