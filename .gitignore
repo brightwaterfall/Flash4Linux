@@ -3,3 +3,7 @@ bin/
 *.a
 *.o
 aqtinstall.log
+tools/python312/
+tools/python312-embed.zip
+tools/get-pip.py
+tools/ui_test_image.png

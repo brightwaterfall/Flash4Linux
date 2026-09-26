@@ -1631,7 +1631,7 @@ void F4lmApp::openDocumentFile (const QString &file)
 
   F4lmDoc * doc;
   // check, if document already open. If yes, set the focus to the first view
-  for (doc = pDocList->first (); doc > 0; doc = pDocList->next ())
+  for (doc = pDocList->first (); doc != nullptr; doc = pDocList->next ())
   {
     if (doc->pathName () == file)
     {
