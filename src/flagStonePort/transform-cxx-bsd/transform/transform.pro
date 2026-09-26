@@ -6,14 +6,19 @@ QT       += core gui xml svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-QMAKE_CFLAGS = -fpermissive
-QMAKE_CXXFLAGS = -fpermissive
-QMAKE_LFLAGS = -fpermissive
+QMAKE_CFLAGS += -w -fpermissive
+QMAKE_CXXFLAGS += -w -fpermissive -std=c++11
 
-INCLUDEPATH += . 
-CONFIG += debug \
-          warn_off \
-          staticlib 
+INCLUDEPATH += .
+DESTDIR = $$PWD
+# MinGW's "ar -M" script splits paths that contain spaces.
+DOLLAR = $
+MAKE_OBJECTS = ~(OBJECTS)
+MAKE_OBJECTS = $$replace(MAKE_OBJECTS, ~, $$DOLLAR)
+LIBFILE = $$shell_quote($$clean_path($$DESTDIR/lib$${TARGET}.a))
+QMAKE_POST_LINK = ar rcs $$LIBFILE $$MAKE_OBJECTS
+CONFIG += release warn_off staticlib c++11
+CONFIG -= debug warn_on 
 TEMPLATE = lib 
 HEADERS += FSAction.h \
            FSActionObject.h \

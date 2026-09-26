@@ -2,11 +2,24 @@
 # ------------------------------------------- 
 # Subdir relative project main directory: ./src
 # Target is an application:  ../bin/f4l
-QT       += core gui xml svg
+QT       += core gui xml svg printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-HEADERS += translation \
+INCLUDEPATH = $$PWD/qt3 $$PWD \
+    flagStonePort/transform-util-cxx \
+    flagStonePort/transform-cxx-bsd
+CONFIG += c++11 thread
+CONFIG -= debug warn_on
+CONFIG += release
+QMAKE_CXXFLAGS += -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-sign-compare -Wno-deprecated-declarations -Wno-deprecated -Wno-unknown-pragmas -Wno-reorder -Wno-unused-function -Wno-comment -Wno-write-strings
+DESTDIR = $$PWD/../bin
+TARGET = f4l
+LIBS += -L$$PWD/flagStonePort/transform-util-cxx/transform-util -ltransform-util \
+        -L$$PWD/flagStonePort/transform-cxx-bsd/transform -ltransform \
+        -lz
+
+HEADERS += qt3/qt3widgets.h \
            canvasItem.h \
            canview.h \
            cbase.h \
@@ -36,7 +49,8 @@ HEADERS += translation \
            ccanvastext.h \
            ccanvasellipse.h \
            ccanvasrectangle.h 
-SOURCES += canvasItem.cpp \
+SOURCES += qt3/qt3widgets.cpp \
+           canvasItem.cpp \
            cbase.cpp \
            cbrushproperties.cpp \
            cbrushtool.cpp \
@@ -66,15 +80,4 @@ SOURCES += canvasItem.cpp \
            ccanvastext.cpp \
            ccanvasellipse.cpp \
            ccanvasrectangle.cpp 
-LIBS += -ltransform-util \
--ltransform
-INCLUDEPATH += flagStonePort/transform-util-cxx \
- flagStonePort/transform-cxx-bsd
-QMAKE_LIBDIR = flagStonePort/transform-util-cxx/transform-util \
-flagStonePort/transform-cxx-bsd/transform
-TARGET = ../bin/f4l
-CONFIG += debug \
-warn_on \
-qt \
-thread
 TEMPLATE = app

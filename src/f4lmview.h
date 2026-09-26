@@ -28,6 +28,7 @@ email                : ozkanpakdil@users.sourceforge.net
 #include <qlistbox.h>
 #include <qlabel.h>
 #include <qvaluevector.h>
+#include <qprinter.h>
 
 #include "canview.h"
 #include "ccanvas.h"

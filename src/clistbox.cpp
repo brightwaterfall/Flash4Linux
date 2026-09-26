@@ -43,7 +43,7 @@ CListView::CListView (QWidget * parent, const char *name, WFlags f)
            //f.setWeight(1);
        setFont( fa );   */
         //    setScrollBar(false);
-    setHScrollBarMode (QScrollView::AlwaysOff);
+    setHScrollBarMode (Qt::ScrollBarAlwaysOff);
 
         //setVariableHeight(true);
         //setVariableWidth ( true );
@@ -129,11 +129,11 @@ void CListView::contentsMousePressEvent (QMouseEvent * e)
         QListViewItem * i = itemAt (p);
         if (i) {
                         // if the user clicked into the root decoration of the item, don't try to start a drag!
-            if (p.x () >header ()->cellPos (header ()->mapToActual (0)) +
+            if (p.x () >header ()->sectionPosition (0) +
                     treeStepSize () * (i->depth () +(rootIsDecorated ()? 1 : 0)) +
                     itemMargin ()
                     ||
-                    p.x () < header ()->cellPos (header ()->mapToActual (0))) {
+                    p.x () < header ()->sectionPosition (0)) {
                 presspos = e->pos ();
                 mousePressed = TRUE;
             }

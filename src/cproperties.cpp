@@ -19,9 +19,9 @@
 #include <qlayout.h>
 
 CProperties::CProperties (QWidget * parent, const char *name):
-        QWidget (parent, name)
+        QWidget(parent)
 {
-    QVBoxLayout *topLayout = new QVBoxLayout (this);
+    QVBoxLayout *topLayout = q3VBoxOn(this, 0, 2, 0);
     /* txt=new QTextEdit(this);
        txt->append("alo"); */
     fontProperties = new CFontProperties (this);

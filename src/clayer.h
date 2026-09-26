@@ -32,7 +32,7 @@ class CLayer:public QObject
 {
     Q_OBJECT
 public:
-    CLayer (QWidget * parent = 0, const char *name = 0);
+    CLayer (QWidget * parent = 0, const QString &name = QString());
     ~CLayer ();
 
     QPtrList < CCanvasItem > *pCanvasItemList;

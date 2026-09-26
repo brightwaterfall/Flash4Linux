@@ -65,7 +65,7 @@ public:
 
     /** opens a file specified by commandline option
      */
-    void openDocumentFile (const char *file = 0);
+    void openDocumentFile (const QString &file = QString ());
 
     /** This function makes that toolbar around scene */
     void initDockWindows ();
@@ -454,7 +454,7 @@ private:
     /** a list of all open documents. If the last window of a document gets closed, the installed eventFilter
      * removes this document from the list. The document list is checked for modified documents when the user
      * is about to close the application. */
-    QList < F4lmDoc > *pDocList;
+    QPtrList < F4lmDoc > *pDocList;
 
     QAction * fileNew;
     QAction * fileNewFromTemplate;

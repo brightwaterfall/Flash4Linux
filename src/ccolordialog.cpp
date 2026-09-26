@@ -24,27 +24,27 @@
 #include "csmalcolorboxes.h"
 
 CColorDialog::CColorDialog (QWidget * parent, const char *name, F4lmApp * p):
-        QWidget (parent, name)
+        QWidget(parent)
 {
         //QColor renk;
         //renk=QColorDialog::getColor(renk,this);
     realp = p;
 
-    QVBoxLayout *topLayout = new QVBoxLayout (this);
+    QVBoxLayout *topLayout = q3VBoxOn(this, 0, 2, 0);
 
     QButtonGroup *ToolsButtonGroup =new QButtonGroup (this, "ToolsButtonGroup");
     ToolsButtonGroup->setGeometry (QRect (150, 70, 71, 291));
     ToolsButtonGroup->setLineWidth (0);
-    ToolsButtonGroup->setTitle (trUtf8 (""));
+    ToolsButtonGroup->setTitle (tr (""));
 
-    QToolButton *ToolButton1 =new QToolButton (ToolsButtonGroup, "ToolButton1");
+    QToolButton *ToolButton1 =q3ToolButton(ToolsButtonGroup, "ToolButton1");
     ToolButton1->setGeometry (QRect (0, 10, 30, 30));
-    ToolButton1->setText (trUtf8 ("CC"));
+    ToolButton1->setText (tr ("CC"));
     connect (ToolButton1, SIGNAL (clicked ()), this,SLOT (slotColorChooser ()));
 
-    QToolButton *ToolButton2 =new QToolButton (ToolsButtonGroup, "ToolButton2");
+    QToolButton *ToolButton2 =q3ToolButton(ToolsButtonGroup, "ToolButton2");
     ToolButton2->setGeometry (QRect (30, 10, 30, 30));
-    ToolButton2->setText (trUtf8 ("..."));
+    ToolButton2->setText (tr ("..."));
 
         //CColorSwatches* s=new CColorSwatches(this,"color_swatches",p);
     topLayout->addWidget (ToolsButtonGroup);

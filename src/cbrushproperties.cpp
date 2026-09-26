@@ -20,14 +20,14 @@
 #include <qlabel.h>
 
 CBrushProperties::CBrushProperties (QWidget * parent, const char *name):
-        QWidget (parent, name)
+        QWidget(parent)
 {
-    QHBoxLayout *topLayout = new QHBoxLayout (this);
+    QHBoxLayout *topLayout = q3HBoxOn(this, 0, 2, 0);
     QLabel *title = new QLabel (this);
     title->setText ("Brush width :");
     topLayout->addWidget (title);
 
-    textBox1 = new QLineEdit (this, "brustoolsizechooser");
+    textBox1 = q3LineEdit(this, "brustoolsizechooser");
     textBox1->setText ("10");
     textBox1->show ();
     textBox1->setMaximumWidth (50);

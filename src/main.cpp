@@ -2,7 +2,7 @@
               main.cpp  -  description
                  -------------------
     begin                : Sat Jun  7 02:29:46 EEST 2003
-    copyright            : (C) 2003 by ˆzkan pakdil
+    copyright            : (C) 2003 by ùzkan pakdil
     email                : ozkanpakdil@users.sourceforge.net
  ***************************************************************************/
 
@@ -17,6 +17,7 @@
  ***************************************************************************/
 
 #include <qapplication.h>
+#include <qstylefactory.h>
 #include <qfont.h>
 #include <qstring.h>
 #include <qtextcodec.h>
@@ -30,6 +31,7 @@
 int main (int argc, char *argv[]) {
 
     QApplication a (argc, argv);
+    a.setStyle (QStyleFactory::create ("Windows"));
 	QPixmap pixmap( (const char **)F4L_Logo1_xpm );
     QSplashScreen *splash = new QSplashScreen( pixmap );
     splash->show();
@@ -42,7 +44,7 @@ int main (int argc, char *argv[]) {
     if (argc > 1) {
     QString arg (argv[1]);
     if (arg == "-tr") {
-        qDebug (arg);
+        qDebug ("%s", qPrintable (arg));
         tor.load (QString ("f4lm_tr.qm") /*+ QTextCodec::locale() */ ,".");
     }
 
@@ -55,8 +57,7 @@ int main (int argc, char *argv[]) {
     }
     a.installTranslator (&tor);
     F4lmApp * f4lm = new F4lmApp ();
-    f4lm->setIcon (QPixmap ((const char **) main_ico_xpm));
-    a.setMainWidget (f4lm);
+    f4lm->setWindowIcon (QPixmap ((const char **) main_ico_xpm));
     /*if(argc>1)
        f4lm->openDocumentFile(argv[1]);
        else      */

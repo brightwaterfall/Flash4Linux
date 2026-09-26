@@ -24,10 +24,10 @@
 #include <qpopupmenu.h>
 //#include "defcel5.xpm"
 
-CTable::CTable (int numR, int numC, QWidget * parent = 0, const char *name = 0)
+CTable::CTable (int numR, int numC, QWidget * parent, const char *name)
 :QTable (numR, numC, parent,name)
 {
-    setFocusPolicy (QWidget::StrongFocus);
+    setFocusPolicy (Qt::StrongFocus);
 
 
         // QFont f( "SansSerif", 6, QFont::Normal );
@@ -35,8 +35,8 @@ CTable::CTable (int numR, int numC, QWidget * parent = 0, const char *name = 0)
         //f.setPointSize(10);
         //f.setWeight(1);
         // setFont( f );
-    setHScrollBarMode (QScrollView::AlwaysOff);
-    setVScrollBarMode (QScrollView::AlwaysOff);
+    setHScrollBarMode (Qt::ScrollBarAlwaysOff);
+    setVScrollBarMode (Qt::ScrollBarAlwaysOff);
     setReadOnly (true);
 
     /* QPainter paint=new QPainter( this );
@@ -69,7 +69,7 @@ void CTable::contentsMousePressEvent (QMouseEvent * e)
 {
     QTable::contentsMousePressEvent (e);
     dad->timeLineRightTopLabel->mousePressEvent (e);
-    if (e->button () == RightButton){
+    if (e->button () == Qt::RightButton){
         QPopupMenu * timeLineRightClickMenu = new QPopupMenu (this);
         /*		renkicin->insertItem ("Color chooser", this, SLOT (finish_element ()));
         		renkicin->insertItem ("Red", this, SLOT (makeElementRed ()));
@@ -111,7 +111,7 @@ void CTable::contentsMousePressEvent (QMouseEvent * e)
     }
 
 
-    if (e->button () == LeftButton) {
+    if (e->button () == Qt::LeftButton) {
                 //QPoint p=mapToGlobal (e->pos());
                 //      dad->timeLineRightTopLabel->mousePressEvent(e);
         dad->dad->slotCurrentView ()->slotShowCanvas (currentRow (),currentColumn ());
@@ -126,20 +126,20 @@ void CTable::contentsMousePressEvent (QMouseEvent * e)
 void CTable::clicked (int row, int col, int button, const QPoint & mousePos)
 {
     QTable::clicked (row, col, button, mousePos);
-    QMouseEvent * e =new QMouseEvent (QEvent::MouseButtonPress, mousePos, button, 0);
+    QMouseEvent * e =new QMouseEvent (QEvent::MouseButtonPress, QPointF (mousePos), QPointF (mousePos), Qt::MouseButton (button), Qt::MouseButtons (button), Qt::NoModifier);
     dad->timeLineRightTopLabel->mousePressEvent (e);
 }
 
 void CTable::contextMenuRequested (int row, int col, const QPoint & pos)
 {
     QTable::contextMenuRequested (row, col, pos);
-    QMouseEvent * e = new QMouseEvent (QEvent::MouseButtonPress, pos, 0, 0);
+    QMouseEvent * e = new QMouseEvent (QEvent::MouseButtonPress, QPointF (pos), QPointF (pos), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     dad->timeLineRightTopLabel->mousePressEvent (e);
 }
 
 void CTable::pressed (int row, int col, int button, const QPoint & mousePos)
 {
-    QMouseEvent * e =new QMouseEvent (QEvent::MouseButtonPress, mousePos, button, 0);
+    QMouseEvent * e =new QMouseEvent (QEvent::MouseButtonPress, QPointF (mousePos), QPointF (mousePos), Qt::MouseButton (button), Qt::MouseButtons (button), Qt::NoModifier);
     dad->timeLineRightTopLabel->mousePressEvent (e);
 }
 

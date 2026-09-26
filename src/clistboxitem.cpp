@@ -19,7 +19,7 @@
 #include "clistboxitem.h"
 #include <qpainter.h>
 #include <qstyle.h>
-//#include <iostream.h>
+//#include <iostream>
 #include <qnamespace.h>
 
 CListViewItem::CListViewItem (QListView * parent, QString label1,

@@ -57,7 +57,7 @@ canview::canview (QCanvas * canvas, QWidget * parent, const char *name)
     :QCanvasView (canvas, parent, name)
 {
   setFocus ();
-  setFocusPolicy (QWidget::StrongFocus);
+  setFocusPolicy (Qt::StrongFocus);
   dad = (F4lmView *) parent;
   z = 0;
 
@@ -73,9 +73,9 @@ canview::canview (QCanvas * canvas, QWidget * parent, const char *name)
   subselectiontoolCursor =QCursor (QPixmap ((const char **) subselection_tool), 0, 0);
   zoominCursor = QCursor (QPixmap ((const char **) zoomin), 0, 0);
   zoomoutCursor = QCursor (QPixmap ((const char **) zoomout), 0, 0);
-  eyedroppertool = QCursor ((const char **) eye_dropper_tool_xpm, 1, 15);
-  brushCursor = QCursor ((const char **) brush_tool_xpm, 15, 23);
-  eraserCursor = QCursor ((const char **) eraser_tool_xpm, 5, 5);
+  eyedroppertool = QCursor (QPixmap ((const char **) eye_dropper_tool_xpm), 1, 15);
+  brushCursor = QCursor (QPixmap ((const char **) brush_tool_xpm), 15, 23);
+  eraserCursor = QCursor (QPixmap ((const char **) eraser_tool_xpm), 5, 5);
   selectionRect = NULL;
   selectedRect = NULL;
   penShape = NULL;
@@ -92,7 +92,7 @@ void canview::contentsMousePressEvent (QMouseEvent * e)
 {
   butPos = true;
 
-  if (e->button () == LeftButton)
+  if (e->button () == Qt::LeftButton)
   {
     cenX = e->x ();
     cenY = e->y ();
@@ -129,7 +129,7 @@ void canview::contentsMousePressEvent (QMouseEvent * e)
                    mulSelectedRects.begin ();
                  mit != mulSelectedRects.end (); ++mit)
             {
-              if (mit != NULL)
+              if (*mit)
               {
                 //(*mit)->hide ();      //delete *mit;
                 //qDebug("selRTTI : %d",(*mit)->rtti());
@@ -368,7 +368,8 @@ void canview::contentsMousePressEvent (QMouseEvent * e)
         if(l.count()<=1) break;
         for (QCanvasItemList::Iterator it = l.begin (); it != l.end (); ++it)
         {
-          if(it==NULL) break;
+          if (*it == 0)
+            break;
           if ((*it)->rtti () == 666)
           {		//if user clicked on def. scene rect. then dont select it.
             continue;
@@ -398,10 +399,9 @@ void canview::contentsMousePressEvent (QMouseEvent * e)
     case 15:		//EyedropperTool;
       {
         QPoint p = e->globalPos ();
-        QWidget *desktop = QApplication::desktop ();
         QPixmap pm =
-          QPixmap::grabWindow (desktop->winId (), p.x (), p.y (), 1, 1);
-        QImage i = pm.convertToImage ();
+          q3GrabWindow (0, p.x (), p.y (), 1, 1);
+        QImage i = pm.toImage ();
 
         QRgb px = i.pixel (0, 0);
         QColor color (qRed (px), qGreen (px), qBlue (px));
@@ -445,7 +445,7 @@ void canview::contentsMousePressEvent (QMouseEvent * e)
       break;
     }
   }
-  if (e->button () == RightButton && dad->defObjID != 18)
+  if (e->button () == Qt::RightButton && dad->defObjID != 18)
   {
     QPopupMenu *renkicin = new QPopupMenu (this);
     /*          renkicin->insertItem ("Color chooser", this, SLOT (finish_element ()));
@@ -491,7 +491,7 @@ void canview::contentsMousePressEvent (QMouseEvent * e)
     renkicin->exec ();
     renkicin->~QPopupMenu ();
   }
-  if (e->button () == RightButton)
+  if (e->button () == Qt::RightButton)
   {
     switch (dad->defObjID)
     {
@@ -794,7 +794,7 @@ void canview::contentsMouseReleaseEvent (QMouseEvent * e)
 
 
 /*void canview::mousePressEvent ( QMouseEvent * e ){
-	if (e->button () == RightButton)
+	if (e->button () == Qt::RightButton)
 	{
 		QPopupMenu* renkicin = new QPopupMenu (this);
  

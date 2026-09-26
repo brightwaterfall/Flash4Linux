@@ -26,9 +26,9 @@
 
 CSmalColorBoxes::CSmalColorBoxes (QWidget * parent, const char *name,
                   QColor r, CColorSwatches * rp):
-        QWidget (parent, name)
+        QWidget(parent)
 {
-        //setFocusPolicy(QWidget::StrongFocus);
+        //setFocusPolicy(Qt::StrongFocus);
     realp = rp;
         //    c=r;
 
@@ -45,7 +45,7 @@ CSmalColorBoxes::~CSmalColorBoxes ()
 
 void CSmalColorBoxes::mousePressEvent (QMouseEvent * e)
 {
-        realp->slotClick (backgroundColor ());	//  ->slotsetDefColor(c);
+        realp->slotClick (q3BackgroundColor (this));	//  ->slotsetDefColor(c);
     if (realp->realp->tools->swatchesCarrier->isVisible ()) {
                 //              grabMouse();
         realp->realp->tools->swatchesCarrier->hide ();
@@ -71,16 +71,15 @@ void CSmalColorBoxes::enterEvent (QEvent *)
     p.end ();
 
     if (realp->realp->tools->swatchesCarrier->colorShower->isVisible ())
-        realp->realp->tools->swatchesCarrier->colorShower->
-        setPaletteBackgroundColor (backgroundColor ());
+        q3SetPaletteBackground (realp->realp->tools->swatchesCarrier->colorShower, q3BackgroundColor (this));
 
     if (realp->realp->tools->swatchesCarrier->colorName->isVisible ()) {
                 //QPixmap p=QPixmap::grabWindow( QApplication::desktop()->winId(),  e->x(),e->y(), 1, 1 );
                 //QImage image = p.convertToImage();
         QString tmp;
-                QRgb px = backgroundColor ().rgb ();	//image.pixel(0,0);
-        tmp.sprintf ("#%02x%02x%02x",qRed (px), qGreen (px), qBlue (px));
-        realp->realp->tools->swatchesCarrier->colorName->setText (tmp.upper ());
+                QRgb px = q3BackgroundColor (this).rgb ();	//image.pixel(0,0);
+        tmp = QString::asprintf ("#%02x%02x%02x", qRed (px), qGreen (px), qBlue (px));
+        realp->realp->tools->swatchesCarrier->colorName->setText (tmp.toUpper ());
     }
 }
 

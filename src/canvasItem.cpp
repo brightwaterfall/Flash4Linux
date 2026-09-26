@@ -62,7 +62,7 @@ void CPenTool::drawShape (QPainter & p)
        p.drawConvexPolygon(part1);
        p.drawConvexPolygon(part2);
        p.drawConvexPolygon(part3);
-       /*p.drawCubicBezier(part1);
+       p.drawCubicBezier(part1);
        p.drawCubicBezier(part2);
        p.drawCubicBezier(part3); */
     /*for(int k=0;k<12-4;k++){

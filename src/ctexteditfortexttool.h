@@ -9,9 +9,11 @@ class CTextEditForTextTool:public QTextEdit
 {
 Q_OBJECT public:
     CTextEditForTextTool (QWidget * parent = 0, const char *name = 0);
-    QPopupMenu *createPopupMenu (const QPoint & pos);
+    void setColor (const QColor & color);
+    void setSelection (int paraFrom, int indexFrom, int paraTo, int indexTo);
     void keyPressEvent (QKeyEvent * e);
     void paintEvent (QPaintEvent * event);
+    void contextMenuEvent (QContextMenuEvent * event);
 
 protected:
 

@@ -17,7 +17,7 @@
  ***************************************************************************/
 
 #include "clabel.h"
-//#include <iostream.h>
+//#include <iostream>
 #include "timeline.h"
 #include "f4lmview.h"
 #include "f4lm.h"
@@ -36,10 +36,10 @@
  
 }     */
 CLabel::CLabel (QWidget * parent, const char *name)
-        :QWidget (parent, name)
+        : QWidget(parent)
 {
 
-        //    setFocusPolicy(QWidget::StrongFocus);
+        //    setFocusPolicy(Qt::StrongFocus);
         //qDebug(QFont::styleHint().toString()) ;
         //QFont f( "Helvetica", 8, QFont::Normal );
         //f.setPixelSize(12);
@@ -75,7 +75,7 @@ void CLabel::paintEvent (QPaintEvent *)
         QFont f ("Courier", 8, QFont::Normal);
         p.setFont (f);
 
-                //setFocusPolicy(QWidget::StrongFocus); cout<<width();    qDebug("paint");
+                //setFocusPolicy(Qt::StrongFocus); cout<<width();    qDebug("paint");
 
         bool kutuCizildi = true;
         bool cizgiCizildi = true;
@@ -156,10 +156,10 @@ void CLabel::paintEvent (QPaintEvent *)
 
 void CLabel::mousePressEvent (QMouseEvent * e)
 {
-        //cout<<e->x()<<endl;    setFocusPolicy(QWidget::StrongFocus);
+        //cout<<e->x()<<endl;    setFocusPolicy(Qt::StrongFocus);
         // qDebug(QString::number(e->x()));
     valueChanged ();
-    if (e->button () == LeftButton)
+    if (e->button () == Qt::LeftButton)
         if (nameT == "timeLineRightTopLabel") {
             leftClick = true;
             leftClickX = e->x ();
@@ -172,9 +172,9 @@ void CLabel::mousePressEvent (QMouseEvent * e)
 void
 CLabel::mouseReleaseEvent (QMouseEvent * e)
 {
-        //cout<<e->x()<<endl;  setFocusPolicy(QWidget::StrongFocus);  qDebug(QString::number(e->x()));
+        //cout<<e->x()<<endl;  setFocusPolicy(Qt::StrongFocus);  qDebug(QString::number(e->x()));
     valueChanged ();
-    if (e->button () == LeftButton)
+    if (e->button () == Qt::LeftButton)
         if (nameT == "timeLineRightTopLabel") {
             leftClick = false;
             /*if(e->x()/8<dad->layerMaxColNum) */
@@ -185,7 +185,7 @@ CLabel::mouseReleaseEvent (QMouseEvent * e)
 void CLabel::mouseMoveEvent (QMouseEvent * e)
 {
         // cout<<endl;
-        // cout<<""<<e->x()<<endl;  setFocusPolicy(QWidget::StrongFocus);  qDebug(QString::number(e->x()));
+        // cout<<""<<e->x()<<endl;  setFocusPolicy(Qt::StrongFocus);  qDebug(QString::number(e->x()));
     valueChanged ();
     if (leftClick && !(e->x () > width ()) && !(e->x () < 0))
         leftClickX = e->x ();

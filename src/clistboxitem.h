@@ -28,13 +28,13 @@ class CListViewItem:public /*QObject, */ QListViewItem
 {
         //Q_OBJECT
 public:
-    CListViewItem (QListView * parent = 0, QString label1 = QString::null,
-               QString label2 = QString::null, QString label3 =
-                   QString::null, QString label4 =
-                   QString::null, QString label5 =
-                   QString::null, QString label6 =
-                   QString::null, QString label7 =
-                   QString::null, QString label8 = QString::null);
+    CListViewItem (QListView * parent = 0, QString label1 = QString(),
+               QString label2 = QString(), QString label3 =
+                   QString(), QString label4 =
+                   QString(), QString label5 =
+                   QString(), QString label6 =
+                   QString(), QString label7 =
+                   QString(), QString label8 = QString());
 
         // CListViewItem( QListView * parent = 0,QString label1=NULL ):
         // QListViewItem(parent,label1){setHeight(15);}

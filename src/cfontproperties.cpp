@@ -2,7 +2,7 @@
               cfontproperties.cpp  -  description
                  -------------------
     begin                : Wed Sep 17 2003
-    copyright            : (C) 2003 by ÷zkan Pakdil
+    copyright            : (C) 2003 by ùzkan Pakdil
     email                : ozkanpakdil@users.sourceforge.net
  ***************************************************************************/
 
@@ -23,62 +23,62 @@
 #include <qevent.h>
 
 CFontProperties::CFontProperties (QWidget * parent, const char *name):
-        QWidget (parent, name)
+        QWidget(parent)
 {
-    QVBoxLayout *topLayout = new QVBoxLayout (this);
-    QWidget *privateLayoutWidget = new QWidget (this, "layout15");
+    QVBoxLayout *topLayout = q3VBoxOn(this, 0, 2, 0);
+    QWidget *privateLayoutWidget = q3Widget(this, "layout15");
         //privateLayoutWidget->setGeometry( QRect( 0, 0, 510, 100 ) );
-    layout15 = new QHBoxLayout (privateLayoutWidget, 11, 6, "layout15");
-    layout10 = new QVBoxLayout (0, 0, 6, "layout10");
-    textLabel1 = new QLabel (privateLayoutWidget, "textLabel1");
+    layout15 = q3HBoxOn(privateLayoutWidget, 11, 6, "layout15");
+    layout10 = q3VBoxOn(0, 0, 6, "layout10");
+    textLabel1 = q3Label(privateLayoutWidget, "textLabel1");
 	
     layout10->addWidget (textLabel1);
-    comboBox1 = new QComboBox (FALSE, privateLayoutWidget, "comboBox1");
+    comboBox1 = q3ComboBox(false, privateLayoutWidget, "comboBox1");
     comboBox1->setMaximumHeight (20);
     layout10->addWidget (comboBox1);
-    textLabel4 = new QLabel (privateLayoutWidget, "textLabel4");
+    textLabel4 = q3Label(privateLayoutWidget, "textLabel4");
     layout10->addWidget (textLabel4);
 
-    comboBox4 = new QComboBox (FALSE, privateLayoutWidget, "comboBox4");
+    comboBox4 = q3ComboBox(false, privateLayoutWidget, "comboBox4");
     comboBox4->setMaximumHeight (20);
     layout10->addWidget (comboBox4);
     layout15->addLayout (layout10);
 
-    layout11 = new QVBoxLayout (0, 0, 6, "layout11");
-    textLabel2 = new QLabel (privateLayoutWidget, "textLabel2");
+    layout11 = q3VBoxOn(0, 0, 6, "layout11");
+    textLabel2 = q3Label(privateLayoutWidget, "textLabel2");
     layout11->addWidget (textLabel2);
-    comboBox2 = new QComboBox (FALSE, privateLayoutWidget, "comboBox2");
+    comboBox2 = q3ComboBox(false, privateLayoutWidget, "comboBox2");
     comboBox2->setMaximumHeight (20);
     layout11->addWidget (comboBox2);
 
-    textLabel5 = new QLabel (privateLayoutWidget, "textLabel5");
+    textLabel5 = q3Label(privateLayoutWidget, "textLabel5");
     layout11->addWidget (textLabel5);
-    comboBox5 = new QComboBox (FALSE, privateLayoutWidget, "comboBox5");
+    comboBox5 = q3ComboBox(false, privateLayoutWidget, "comboBox5");
     comboBox5->setMaximumHeight (20);
     layout11->addWidget (comboBox5);
     layout15->addLayout (layout11);
 
-    layout12 = new QVBoxLayout (0, 0, 6, "layout12");
+    layout12 = q3VBoxOn(0, 0, 6, "layout12");
 
-    textLabel3 = new QLabel (privateLayoutWidget, "textLabel3");
+    textLabel3 = q3Label(privateLayoutWidget, "textLabel3");
     textLabel3->setMaximumSize (QSize (32767, 20));
     layout12->addWidget (textLabel3);
 
-    comboBox3 = new QComboBox (FALSE, privateLayoutWidget, "comboBox3");
+    comboBox3 = q3ComboBox(false, privateLayoutWidget, "comboBox3");
     comboBox3->setMaximumHeight (20);
     layout12->addWidget (comboBox3);
 
-    pushButton1 = new QPushButton (privateLayoutWidget, "pushButton1");
+    pushButton1 = q3PushButton(privateLayoutWidget, "pushButton1");
     layout12->addWidget (pushButton1);
     layout15->addLayout (layout12);
 
-    layout13 = new QVBoxLayout (0, 0, 6, "layout13");
+    layout13 = q3VBoxOn(0, 0, 6, "layout13");
 
-    textLabel6 = new QLabel (privateLayoutWidget, "textLabel6");
+    textLabel6 = q3Label(privateLayoutWidget, "textLabel6");
     textLabel6->setMaximumSize (QSize (32767, 20));
     layout13->addWidget (textLabel6);
 
-    textLabel7 = new QLabel (privateLayoutWidget, "textLabel7");
+    textLabel7 = q3Label(privateLayoutWidget, "textLabel7");
     layout13->addWidget (textLabel7);
     layout15->addLayout (layout13);
     languageChange ();
@@ -102,7 +102,7 @@ CFontProperties::CFontProperties (QWidget * parent, const char *name):
             newList.append (s + "(BT)");
         else
 #endif
-            comboBox1->insertItem ((s), idx++);
+            comboBox1->insertItem (idx++, s);
          newList.append (s);
     }
     family = comboBox1->currentText ();
@@ -112,8 +112,8 @@ CFontProperties::CFontProperties (QWidget * parent, const char *name):
     scriptScripts.clear ();
 
     QString scriptname;
-    for (int i = 0; i < QFont::NScripts; i++) {
-        scriptname = QFontDatabase::scriptName ((QFont::Script) i);
+    for (int i = 0; i < QFontDatabase::WritingSystemsCount; i++) {
+        scriptname = QFontDatabase::writingSystemName ((QFontDatabase::WritingSystem) i);
         if (!scriptname.isEmpty ()) {
             scriptNames += scriptname;
             scriptScripts += i;
@@ -123,14 +123,14 @@ CFontProperties::CFontProperties (QWidget * parent, const char *name):
     if (scriptNames.isEmpty ()) {
 #ifndef QT_NO_DEBUG
         qWarning ("QFontDialog::updateScripts: Internal error, "
-              "no scripts for family \"%s\"", (const char *) family);
+              "no scripts for family \"%s\"", qPrintable (family));
 #endif
 
     }
 
     it = scriptNames.begin ();
     for (; it != scriptNames.end (); ++it)
-        comboBox4->insertItem (*it);
+        comboBox4->addItem (*it);
         //////////////////font styles listings/////////////////////////////////////////////////
     updateFontStyleList ();
         ////////////////////////////////////////////////////////////
@@ -142,21 +142,21 @@ CFontProperties::CFontProperties (QWidget * parent, const char *name):
         qWarning ("QFontDialog::updateSizes: Internal error, "
               "no pointsizes for family \"%s\" with script \"%s\"\n"
               "and style \"%s\"",
-              (const char *) family, (const char *) script,
-              (const char *) style);
+              qPrintable (family), qPrintable (script),
+              qPrintable (style));
 #endif
                 //      return;
     }
     int i;
     QString tmp;
     for (i = 0; (uint) i < sizes.count (); i++) {
-        tmp.sprintf ("%i", sizes[i]);
-        comboBox3->insertItem (tmp);
+        tmp = QString::asprintf ("%i", sizes[i]);
+        comboBox3->addItem (tmp);
     }
 
-    comboBox5->insertItem ("None");
-    comboBox5->insertItem ("Strikeout");
-    comboBox5->insertItem ("Underline");
+    comboBox5->addItem ("None");
+    comboBox5->addItem ("Strikeout");
+    comboBox5->addItem ("Underline");
 
     /*comboBox5->setEditable(true);
        comboBox5->setEditable(true);
@@ -205,24 +205,24 @@ void CFontProperties::showQTfontSelection ()
 
 void CFontProperties::slotFontChanged (int idx)
 {
-    family = comboBox1->text (idx);
+    family = comboBox1->itemText (idx);
     updateCanvasFont ();
     updateFontStyleList ();
 }
 
 void CFontProperties::slotFontStyleChanged (int idx)
 {
-    style = comboBox2->text (idx);
+    style = comboBox2->itemText (idx);
     updateCanvasFont ();
 }
 
 void CFontProperties::slotFonSizeChanged (int idx){
-    size = comboBox3->text (idx);
+    size = comboBox3->itemText (idx);
     updateCanvasFont ();
 }
 
 void CFontProperties::slotScriptChanged (int idx){
-    script = comboBox4->text (idx);
+    script = comboBox4->itemText (idx);
     updateCanvasFont ();
 }
 
@@ -238,9 +238,9 @@ CFontProperties::updateCanvasFont ()
     if (pSize == 0)
         pSize = 12;
     QFont f = fdb.font (family, style, pSize);
-    if (comboBox5->currentItem () == 1)
+    if (comboBox5->currentIndex () == 1)
         f.setStrikeOut (true);
-    if (comboBox5->currentItem () == 2)
+    if (comboBox5->currentIndex () == 2)
         f.setUnderline (true);
 
     F4lmApp *dad = (F4lmApp *) parent ()->parent ()->parent ()->parent ();
@@ -263,10 +263,10 @@ CFontProperties::updateFontStyleList ()
 #ifndef QT_NO_DEBUG
         qWarning ("QFontDialog::updateStyles: Internal error, "
               "no styles for family \"%s\" with script \"%s\"",
-              (const char *) family, (const char *) script);
+              qPrintable (family), qPrintable (script));
 #endif
         return;
     }
-    comboBox2->insertStringList (styles);
+    comboBox2->insertItems (0, styles);
     style = comboBox2->currentText ();
 }

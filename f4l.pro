@@ -5,9 +5,7 @@
 
 SUBDIRS += src/flagStonePort/transform-cxx-bsd/transform \
            src/flagStonePort/transform-util-cxx/transform-util \
-           src 
-CONFIG += release \
-warn_on \
-qt \
-thread
+           src
+CONFIG += ordered release warn_on qt thread c++11
 TEMPLATE = subdirs
+QT += widgets

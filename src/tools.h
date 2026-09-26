@@ -105,7 +105,7 @@ class CToolButton:public QToolButton
     Q_OBJECT
 public:
     CTools * dad;
-    CToolButton (QWidget * parent = 0, const char *name = 0);
+    CToolButton (QWidget * parent = 0, const QString &name = QString());
 
 protected:
     void enterEvent (QEvent *);

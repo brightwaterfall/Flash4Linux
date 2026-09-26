@@ -24,8 +24,9 @@
 #include <qimage.h>
 #include <qdockarea.h>
 #include <qmap.h>
+#include <qtextstream.h>
 #include <qfocusdata.h>
-//#include <iostream.h>
+//#include <iostream>
 
 // application specific includes
 #include "f4lmview.h"
@@ -41,11 +42,11 @@
 
 F4lmApp::F4lmApp ()
 {
-  setName ("F4lmApp");
-  setCaption (tr ("F4lm "));
+  setObjectName ("F4lmApp");
+  q3SetCaption(this, tr ("F4lm "));
   printer = new QPrinter;
   untitledCount = 0;
-  pDocList = new QList < F4lmDoc > ();
+  pDocList = new QPtrList < F4lmDoc > ();
   pDocList->setAutoDelete (true);
 
   ///////////////////////////////////////////////////////////////////
@@ -62,8 +63,6 @@ F4lmApp::F4lmApp ()
   //  viewStatusBar->setOn(true);
   fileToolbar->hide ();
 
-  QApplication::setGlobalMouseTracking (true);
-
 }
 
 F4lmApp::~F4lmApp ()
@@ -79,930 +78,931 @@ void F4lmApp::initActions ()
   openIcon = QPixmap (fileopen);
   saveIcon = QPixmap (filesave);
 
-  fileNew = new QAction (tr ("New File"), newIcon, tr ("&New"), QAccel::stringToKey (tr ("Ctrl+N")), this);
+  fileNew = q3NewAction (tr ("New File"), newIcon, tr ("&New"), QKeySequence (tr ("Ctrl+N")), this);
   fileNew->setStatusTip (tr ("Creates a new document"));
   fileNew->setWhatsThis (tr ("New File\n\nCreates a new document"));
-  connect (fileNew, SIGNAL (activated ()), this, SLOT (slotFileNew ()));
+  connect (fileNew, SIGNAL (triggered ()), this, SLOT (slotFileNew ()));
 
-  fileNewFromTemplate = new QAction (tr ("New From Template"), tr ("N&ew From Template"), 0, this);
+  fileNewFromTemplate = q3NewAction (tr ("New From Template"), tr ("N&ew From Template"), 0, this);
   fileNewFromTemplate->setStatusTip (tr ("Create a new document from a template"));
   fileNewFromTemplate->setWhatsThis (tr ("New From Template\n\nCreate a new document from a template"));
-  connect (fileNewFromTemplate, SIGNAL (activated ()), this, SLOT (slotfileNewFromTemplate ()));
+  connect (fileNewFromTemplate, SIGNAL (triggered ()), this, SLOT (slotfileNewFromTemplate ()));
 
-  fileOpen = new QAction (tr ("Open File"), openIcon, tr ("&Open..."), 0, this);
+  fileOpen = q3NewAction (tr ("Open File"), openIcon, tr ("&Open..."), 0, this);
   fileOpen->setStatusTip (tr ("Opens an existing document"));
   fileOpen->setWhatsThis (tr ("Open File\n\nOpens an existing document"));
-  connect (fileOpen, SIGNAL (activated ()), this, SLOT (slotFileOpen ()));
+  connect (fileOpen, SIGNAL (triggered ()), this, SLOT (slotFileOpen ()));
 
-  fileOpenAsLibrary = new QAction (tr ("Open as Library..."), tr ("Open as &Library..."), 0, this);
+  fileOpenAsLibrary = q3NewAction (tr ("Open as Library..."), tr ("Open as &Library..."), 0, this);
   fileOpenAsLibrary->setStatusTip (tr ("Open a document as a floating Library window"));
   fileOpenAsLibrary->setWhatsThis (tr ("Open as Library...\n\n Open a document as a floating Library window "));
-  connect (fileOpenAsLibrary, SIGNAL (activated ()), this, SLOT (slotfileOpenAsLibrary ()));
+  connect (fileOpenAsLibrary, SIGNAL (triggered ()), this, SLOT (slotfileOpenAsLibrary ()));
 
-  fileSaveAsTemplate = new QAction (tr ("Save As Template..."), tr ("Save As &Template..."), 0, this);
+  fileSaveAsTemplate = q3NewAction (tr ("Save As Template..."), tr ("Save As &Template..."), 0, this);
   fileSaveAsTemplate->setStatusTip (tr ("Save the active document as a template"));
   fileSaveAsTemplate->setWhatsThis (tr ("Save As Template...\n\n Save the active document as a template "));
-  connect (fileSaveAsTemplate, SIGNAL (activated ()), this, SLOT (slotfileSaveAsTemplate ()));
+  connect (fileSaveAsTemplate, SIGNAL (triggered ()), this, SLOT (slotfileSaveAsTemplate ()));
 
-  fileRevert = new QAction (tr ("Revert"), tr ("Rever&t"), 0, this);
+  fileRevert = q3NewAction (tr ("Revert"), tr ("Rever&t"), 0, this);
   fileRevert->setStatusTip (tr ("Revert to the last saved version of the active document"));
   fileRevert->setWhatsThis (tr ("Revert\n\n Revert to the last saved version of the active document "));
-  connect (fileRevert, SIGNAL (activated ()), this, SLOT (slotfileRevert ()));
+  connect (fileRevert, SIGNAL (triggered ()), this, SLOT (slotfileRevert ()));
 
-  fileImport = new QAction (tr ("Import..."), tr ("&Import..."), 0, this);
+  fileImport = q3NewAction (tr ("Import..."), tr ("&Import..."), 0, this);
   fileImport->setStatusTip (tr ("Import files created in another application"));
   fileImport->setWhatsThis (tr ("Import...\n\n Import files created in another application "));
-  connect (fileImport, SIGNAL (activated ()), this, SLOT (slotfileImport ()));
+  connect (fileImport, SIGNAL (triggered ()), this, SLOT (slotfileImport ()));
 
-  fileImportToLibrary = new QAction (tr ("Import to Library..."), tr ("&Import to Library..."), QAccel::stringToKey (tr ("Ctrl+Alt+R")), this);
+  fileImportToLibrary = q3NewAction (tr ("Import to Library..."), tr ("&Import to Library..."), QKeySequence (tr ("Ctrl+Alt+R")), this);
   fileImportToLibrary->setStatusTip (tr ("Import files created in another application to the document library"));
   fileImportToLibrary->setWhatsThis (tr ("Import to Library...\n\n Import files created in another application to the document library "));
-  connect (fileImportToLibrary, SIGNAL (activated ()), this, SLOT (slotfileImportToLibrary ()));
+  connect (fileImportToLibrary, SIGNAL (triggered ()), this, SLOT (slotfileImportToLibrary ()));
 
-  fileExportMovie = new QAction (tr ("Export Movie..."), tr ("Export &Movie..."), QAccel::stringToKey (tr ("Ctrl+Alt+Shift+S")), this);
+  fileExportMovie = q3NewAction (tr ("Export Movie..."), tr ("Export &Movie..."), QKeySequence (tr ("Ctrl+Alt+Shift+S")), this);
   fileExportMovie->setStatusTip (tr ("Save the document as a movie for use in another application"));
   fileExportMovie->setWhatsThis (tr ("Export Movie...\n\n Save the document as a movie for use in another application "));
-  connect (fileExportMovie, SIGNAL (activated ()), this, SLOT (slotfileExportMovie ()));
+  connect (fileExportMovie, SIGNAL (triggered ()), this, SLOT (slotfileExportMovie ()));
 
-  fileExportImage = new QAction (tr ("Export Image..."), tr ("&Export Image..."), 0, this);
+  fileExportImage = q3NewAction (tr ("Export Image..."), tr ("&Export Image..."), 0, this);
   fileExportImage->setStatusTip (tr ("Save a drawing in a format for use in another application"));
   fileExportImage->setWhatsThis (tr ("Export Image...\n\n Save a drawing in a format for use in another application "));
-  connect (fileExportImage, SIGNAL (activated ()), this, SLOT (slotfileExportImage ()));
+  connect (fileExportImage, SIGNAL (triggered ()), this, SLOT (slotfileExportImage ()));
 
-  filePublishSetting = new QAction (tr ("Publish Settings..."), tr ("Publish Settin&gs..."), QAccel::stringToKey (tr ("Ctrl+Shift+F12")), this);
+  filePublishSetting = q3NewAction (tr ("Publish Settings..."), tr ("Publish Settin&gs..."), QKeySequence (tr ("Ctrl+Shift+F12")), this);
   filePublishSetting->setStatusTip (tr ("Modify publish settings\nPublish Settings"));
   filePublishSetting->setWhatsThis (tr ("Publish Settings...\n\n Modify publish settings\nPublish Settings "));
-  connect (filePublishSetting, SIGNAL (activated ()), this, SLOT (slotfilePublishSetting ()));
+  connect (filePublishSetting, SIGNAL (triggered ()), this, SLOT (slotfilePublishSetting ()));
 
-  filePublishPreview_Default = new QAction (tr ("Default"), tr ("&Default"), QAccel::stringToKey (tr ("Ctrl+F12")), this);
+  filePublishPreview_Default = q3NewAction (tr ("Default"), tr ("&Default"), QKeySequence (tr ("Ctrl+F12")), this);
   filePublishPreview_Default->setStatusTip (tr ("Publish and preview the document with the default format"));
   filePublishPreview_Default->setWhatsThis (tr ("Default\n\n Publish and preview the document with the default format "));
-  connect (filePublishPreview_Default, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_Default ()));
+  connect (filePublishPreview_Default, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_Default ()));
 
-  filePublishPreview_Flash = new QAction (tr ("Flash"), tr ("&Flash"), 0, this);
+  filePublishPreview_Flash = q3NewAction (tr ("Flash"), tr ("&Flash"), 0, this);
   filePublishPreview_Flash->setStatusTip (tr ("Publish and preview the document in the Flash (swf) format"));
   filePublishPreview_Flash->setWhatsThis (tr ("Flash\n\nPublish and preview the document in the Flash (swf) format "));
-  connect (filePublishPreview_Flash, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_Flash ()));
+  connect (filePublishPreview_Flash, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_Flash ()));
 
-  filePublishPreview_Html = new QAction (tr ("HTML"), tr ("&HTML"), 0, this);
+  filePublishPreview_Html = q3NewAction (tr ("HTML"), tr ("&HTML"), 0, this);
   filePublishPreview_Html->setStatusTip (tr ("Publish and preview the document in HTML format"));
   filePublishPreview_Html->setWhatsThis (tr ("HTML\n\n Publish and preview the document in HTML format "));
-  connect (filePublishPreview_Html, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_Html ()));
+  connect (filePublishPreview_Html, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_Html ()));
 
-  filePublishPreview_GIF = new QAction (tr ("GIF"), tr ("&GIF"), 0, this);
+  filePublishPreview_GIF = q3NewAction (tr ("GIF"), tr ("&GIF"), 0, this);
   filePublishPreview_GIF->setStatusTip (tr ("Publish and preview the document as a GIF image"));
   filePublishPreview_GIF->setWhatsThis (tr ("GIF \n\n Publish and preview the document as a GIF image "));
-  connect (filePublishPreview_GIF, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_GIF ()));
+  connect (filePublishPreview_GIF, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_GIF ()));
 
-  filePublishPreview_JPEG = new QAction (tr ("JPEG"), tr ("&JPEG"), 0, this);
+  filePublishPreview_JPEG = q3NewAction (tr ("JPEG"), tr ("&JPEG"), 0, this);
   filePublishPreview_JPEG->setStatusTip (tr ("Publish and preview the document as a JPEG image"));
   filePublishPreview_JPEG->setWhatsThis (tr ("JPEG\n\n Publish and preview the document as a JPEG image "));
-  connect (filePublishPreview_JPEG, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_JPEG ()));
+  connect (filePublishPreview_JPEG, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_JPEG ()));
 
-  filePublishPreview_PNG = new QAction (tr ("PNG"), tr ("&PNG"), 0, this);
+  filePublishPreview_PNG = q3NewAction (tr ("PNG"), tr ("&PNG"), 0, this);
   filePublishPreview_PNG->setStatusTip (tr ("Publish and preview the document as a PNG image"));
   filePublishPreview_PNG->setWhatsThis (tr ("PNG\n\n Publish and preview the document as a PNG image "));
-  connect (filePublishPreview_PNG, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_PNG ()));
+  connect (filePublishPreview_PNG, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_PNG ()));
 
-  filePublishPreview_Projector = new QAction (tr ("Projector"), tr ("P&rojector"), 0, this);
+  filePublishPreview_Projector = q3NewAction (tr ("Projector"), tr ("P&rojector"), 0, this);
   filePublishPreview_Projector->setStatusTip (tr ("Publish and preview the document as a standalone projector"));
   filePublishPreview_Projector->setWhatsThis (tr ("Projector\n\n Publish and preview the document as a standalone projector "));
-  connect (filePublishPreview_Projector, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_Projector ()));
+  connect (filePublishPreview_Projector, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_Projector ()));
 
-  filePublishPreview_Quicktime = new QAction (tr ("QuickTime"), tr ("&QuickTime"), 0, this);
+  filePublishPreview_Quicktime = q3NewAction (tr ("QuickTime"), tr ("&QuickTime"), 0, this);
   filePublishPreview_Quicktime->setStatusTip (tr ("Publish and preview the document as a QuickTime movie"));
   filePublishPreview_Quicktime->setWhatsThis (tr ("QuickTime\n\n Publish and preview the document as a QuickTime movie "));
-  connect (filePublishPreview_Quicktime, SIGNAL (activated ()), this, SLOT (slotfilePublishPreview_Quicktime ()));
+  connect (filePublishPreview_Quicktime, SIGNAL (triggered ()), this, SLOT (slotfilePublishPreview_Quicktime ()));
 
-  filePublish = new QAction (tr ("Publish"), tr ("Pu&blish"), QAccel::stringToKey (tr ("Shift+F12")), this);
+  filePublish = q3NewAction (tr ("Publish"), tr ("Pu&blish"), QKeySequence (tr ("Shift+F12")), this);
   filePublish->setStatusTip (tr ("Publish document in selected formats\nPublish"));
   filePublish->setWhatsThis (tr ("Publish\n\n Publish document in selected formats\nPublish "));
-  connect (filePublish, SIGNAL (activated ()), this, SLOT (slotfilePublish ()));
+  connect (filePublish, SIGNAL (triggered ()), this, SLOT (slotfilePublish ()));
 
-  filePageSetup = new QAction (tr ("Page Setup..."), tr ("Page Set&up..."), 0, this);
+  filePageSetup = q3NewAction (tr ("Page Setup..."), tr ("Page Set&up..."), 0, this);
   filePageSetup->setStatusTip (tr ("Change the paper type and print margins"));
   filePageSetup->setWhatsThis (tr ("Page Setup...\n\n Change the paper type and print margins "));
-  connect (filePageSetup, SIGNAL (activated ()), this, SLOT (slotfilePageSetup ()));
+  connect (filePageSetup, SIGNAL (triggered ()), this, SLOT (slotfilePageSetup ()));
 
-  filePrintPreview = new QAction (tr ("Print Preview"), tr ("Print Pre&view"), 0, this);
+  filePrintPreview = q3NewAction (tr ("Print Preview"), tr ("Print Pre&view"), 0, this);
   filePrintPreview->setStatusTip (tr ("Show pages as they will appear on the printer\nPrint Preview"));
   filePrintPreview->setWhatsThis (tr ("Print Preview\n\n Show pages as they will appear on the printer\nPrint Preview "));
-  connect (filePrintPreview, SIGNAL (activated ()), this, SLOT (slotfilePrintPreview ()));
+  connect (filePrintPreview, SIGNAL (triggered ()), this, SLOT (slotfilePrintPreview ()));
 
 
-  fileSend = new QAction (tr ("Send..."), tr ("Sen&d..."), 0, this);
+  fileSend = q3NewAction (tr ("Send..."), tr ("Sen&d..."), 0, this);
   fileSend->setStatusTip (tr ("Send a mail message with an attached document"));
   fileSend->setWhatsThis (tr("Send...\n\n Send a mail message with an attached document "));
-  connect (fileSend, SIGNAL (activated ()), this, SLOT (slotfileSend ()));
+  connect (fileSend, SIGNAL (triggered ()), this, SLOT (slotfileSend ()));
 
-  fileRecentFile = new QAction (tr ("Recent File"), tr ("R&ecent File"), 0, this);
+  fileRecentFile = q3NewAction (tr ("Recent File"), tr ("R&ecent File"), 0, this);
   fileRecentFile->setStatusTip (tr ("Open this document"));
   fileRecentFile->setWhatsThis (tr ("Recent File\n\n Open the recen file "));
-  connect (fileRecentFile, SIGNAL (activated ()), this, SLOT (slotfileRecentFile ()));
+  connect (fileRecentFile, SIGNAL (triggered ()), this, SLOT (slotfileRecentFile ()));
 
-  fileSave = new QAction (tr ("Save File"), saveIcon, tr ("&Save"), QAccel::stringToKey (tr ("Ctrl+S")), this);
+  fileSave = q3NewAction (tr ("Save File"), saveIcon, tr ("&Save"), QKeySequence (tr ("Ctrl+S")), this);
   fileSave->setStatusTip (tr ("Saves the actual document"));
   fileSave->setWhatsThis (tr ("Save File.\n\nSaves the actual document"));
-  connect (fileSave, SIGNAL (activated ()), this, SLOT (slotFileSave ()));
+  connect (fileSave, SIGNAL (triggered ()), this, SLOT (slotFileSave ()));
 
-  fileSaveAs = new QAction (tr ("Save File As"), tr ("Save &as..."), 0, this);
+  fileSaveAs = q3NewAction (tr ("Save File As"), tr ("Save &as..."), 0, this);
   fileSaveAs->setStatusTip (tr ("Saves the actual document under a new filename"));
   fileSaveAs->setWhatsThis (tr ("Save As\n\nSaves the actual document under a new filename"));
-  connect (fileSaveAs, SIGNAL (activated ()), this, SLOT (slotFileSave ()));
+  connect (fileSaveAs, SIGNAL (triggered ()), this, SLOT (slotFileSave ()));
 
-  fileClose = new QAction (tr ("Close File"), tr ("&Close"), QAccel::stringToKey (tr ("Ctrl+W")), this);
+  fileClose = q3NewAction (tr ("Close File"), tr ("&Close"), QKeySequence (tr ("Ctrl+W")), this);
   fileClose->setStatusTip (tr ("Closes the actual document"));
   fileClose->setWhatsThis (tr ("Close File\n\nCloses the actual document"));
-  connect (fileClose, SIGNAL (activated ()), this, SLOT (slotFileClose ()));
+  connect (fileClose, SIGNAL (triggered ()), this, SLOT (slotFileClose ()));
 
-  filePrint = new QAction (tr ("Print File"), tr ("&Print"), QAccel::stringToKey (tr ("Ctrl+P")), this);
+  filePrint = q3NewAction (tr ("Print File"), tr ("&Print"), QKeySequence (tr ("Ctrl+P")), this);
   filePrint->setStatusTip (tr ("Prints out the actual document"));
   filePrint->setWhatsThis (tr ("Print File\n\nPrints out the actual document"));
-  connect (filePrint, SIGNAL (activated ()), this, SLOT (slotFilePrint ()));
+  connect (filePrint, SIGNAL (triggered ()), this, SLOT (slotFilePrint ()));
 
-  fileQuit = new QAction (tr ("Exit"), tr ("E&xit"), QAccel::stringToKey (tr ("Ctrl+Q")), this);
+  fileQuit = q3NewAction (tr ("Exit"), tr ("E&xit"), QKeySequence (tr ("Ctrl+Q")), this);
   fileQuit->setStatusTip (tr ("Quits the application"));
   fileQuit->setWhatsThis (tr ("Exit\n\nQuits the application"));
-  connect (fileQuit, SIGNAL (activated ()), this, SLOT (slotFileQuit ()));
+  connect (fileQuit, SIGNAL (triggered ()), this, SLOT (slotFileQuit ()));
 
   /////////////////////////////////////////////////////////////////////////////////
-  editCut = new QAction (tr ("Cut"), tr ("Cu&t"), QAccel::stringToKey (tr ("Ctrl+X")), this);
+  editCut = q3NewAction (tr ("Cut"), tr ("Cu&t"), QKeySequence (tr ("Ctrl+X")), this);
   editCut->setStatusTip (tr ("Cuts the selected section and puts it to the clipboard"));
   editCut->setWhatsThis (tr ("Cut\n\nCuts the selected section and puts it to the clipboard"));
-  connect (editCut, SIGNAL (activated ()), this, SLOT (slotEditCut ()));
+  connect (editCut, SIGNAL (triggered ()), this, SLOT (slotEditCut ()));
 
-  editCopy =new QAction (tr ("Copy"), tr ("&Copy"), QAccel::stringToKey (tr ("Ctrl+C")), this);
+  editCopy =q3NewAction (tr ("Copy"), tr ("&Copy"), QKeySequence (tr ("Ctrl+C")), this);
   editCopy->setStatusTip (tr ("Copies the selected section to the clipboard"));
   editCopy->setWhatsThis (tr ("Copy\n\nCopies the selected section to the clipboard"));
-  connect (editCopy, SIGNAL (activated ()), this, SLOT (slotEditCopy ()));
+  connect (editCopy, SIGNAL (triggered ()), this, SLOT (slotEditCopy ()));
 
-  editUndo = new QAction (tr ("Undo"), tr ("&Undo"), QAccel::stringToKey (tr ("Ctrl+Z")), this);
+  editUndo = q3NewAction (tr ("Undo"), tr ("&Undo"), QKeySequence (tr ("Ctrl+Z")), this);
   editUndo->setStatusTip (tr ("Reverts the last editing action"));
   editUndo->setWhatsThis (tr ("Undo\n\nReverts the last editing action"));
-  connect (editUndo, SIGNAL (activated ()), this, SLOT (slotEditUndo ()));
+  connect (editUndo, SIGNAL (triggered ()), this, SLOT (slotEditUndo ()));
 
-  editPaste = new QAction (tr ("Paste"), tr ("&Paste"),QAccel::stringToKey (tr ("Ctrl+V")), this);
+  editPaste = q3NewAction (tr ("Paste"), tr ("&Paste"),QKeySequence (tr ("Ctrl+V")), this);
   editPaste->setStatusTip (tr ("Pastes the clipboard contents to actual position"));
   editPaste-> setWhatsThis (tr("Paste\n\nPastes the clipboard contents to actual position"));
-  connect (editPaste, SIGNAL (activated ()), this, SLOT (slotEditPaste ()));
+  connect (editPaste, SIGNAL (triggered ()), this, SLOT (slotEditPaste ()));
 
 
-  editRedo = new QAction (tr ("Redo"), tr ("&Redo"),QAccel::stringToKey (tr ("Ctrl+Y")), this);
+  editRedo = q3NewAction (tr ("Redo"), tr ("&Redo"),QKeySequence (tr ("Ctrl+Y")), this);
   editRedo->setStatusTip (tr ("Redo the previously undone action\nRedo"));
   editRedo->setWhatsThis (tr ("Redo\n\nRedo the previously undone action\nRedo"));
-  connect (editRedo, SIGNAL (activated ()), this, SLOT (sloteditRedo ()));
+  connect (editRedo, SIGNAL (triggered ()), this, SLOT (sloteditRedo ()));
 
-  editPasteinPlace =new QAction (tr ("Paste in Place"), tr ("Paste i&n Place"),QAccel::stringToKey (tr ("Ctrl+Shift+V")), this);
+  editPasteinPlace =q3NewAction (tr ("Paste in Place"), tr ("Paste i&n Place"),QKeySequence (tr ("Ctrl+Shift+V")), this);
   editPasteinPlace->setStatusTip (tr("Insert the Clipboard contents without centering in the window"));
   editPasteinPlace->setWhatsThis (tr("Paste in Place\n\nInsert the Clipboard contents without centering in the window"));
-  connect (editPasteinPlace, SIGNAL (activated ()), this,SLOT (sloteditPasteinPlace ()));
+  connect (editPasteinPlace, SIGNAL (triggered ()), this,SLOT (sloteditPasteinPlace ()));
 
 
-  editPasteSpecial =new QAction (tr ("Paste Special..."), tr ("Paste &Special..."), 0, this);
+  editPasteSpecial =q3NewAction (tr ("Paste Special..."), tr ("Paste &Special..."), 0, this);
   editPasteSpecial->setStatusTip (tr("Insert the Clipboard contents with options"));
   editPasteSpecial->setWhatsThis (tr("Paste Special...\n\nInsert the Clipboard contents with options"));
-  connect (editPasteSpecial, SIGNAL (activated ()), this, SLOT (sloteditPasteSpecial ()));
+  connect (editPasteSpecial, SIGNAL (triggered ()), this, SLOT (sloteditPasteSpecial ()));
 
-  editClear = new QAction (tr ("Clear"), tr ("Cle&ar"),  QKeySequence (Qt::Key_Backspace), this);
+  editClear = q3NewAction (tr ("Clear"), tr ("Cle&ar"),  QKeySequence (Qt::Key_Backspace), this);
   editClear->setStatusTip (tr ("Delete the selection"));
   editClear->setWhatsThis (tr ("Clear\n\nDelete the selection"));
-  connect (editClear, SIGNAL (activated ()), this, SLOT (sloteditClear ()));
+  connect (editClear, SIGNAL (triggered ()), this, SLOT (sloteditClear ()));
 
 
-  editDuplicate = new QAction (tr ("Duplicate"), tr ("&Duplicate"), QKeySequence (Qt::CTRL + Qt::Key_D), this);
+  editDuplicate = q3NewAction (tr ("Duplicate"), tr ("&Duplicate"), QKeySequence (Qt::CTRL + Qt::Key_D), this);
   editDuplicate->setStatusTip (tr ("Duplicate the selection"));
   editDuplicate->setWhatsThis (tr ("Duplicate\n\nDuplicate the selection"));
-  connect (editDuplicate, SIGNAL (activated ()), this,SLOT (sloteditDuplicate ()));
+  connect (editDuplicate, SIGNAL (triggered ()), this,SLOT (sloteditDuplicate ()));
 
-  editSelectAll = new QAction (tr ("Select All"), tr ("Select A&ll"), QKeySequence (Qt::CTRL + Qt::Key_A), this);
+  editSelectAll = q3NewAction (tr ("Select All"), tr ("Select A&ll"), QKeySequence (Qt::CTRL + Qt::Key_A), this);
   editSelectAll->setStatusTip (tr ("Select the entire drawing"));
   editSelectAll->setWhatsThis (tr ("Select All\n\nSelect the entire drawing"));
-  connect (editSelectAll, SIGNAL (activated ()), this, SLOT (sloteditSelectAll ()));
+  connect (editSelectAll, SIGNAL (triggered ()), this, SLOT (sloteditSelectAll ()));
 
-  editDeselectAll =new QAction (tr ("Deselect All"), tr ("D&eselect All"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_A), this);
+  editDeselectAll =q3NewAction (tr ("Deselect All"), tr ("D&eselect All"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_A), this);
   editDeselectAll->setStatusTip (tr ("Deselect all selected elements in the drawing"));
   editDeselectAll->setWhatsThis (tr("Deselect All\n\nDeselect all selected elements in the drawing"));
-  connect (editDeselectAll, SIGNAL (activated ()), this,SLOT (sloteditDeselectAll ()));
+  connect (editDeselectAll, SIGNAL (triggered ()), this,SLOT (sloteditDeselectAll ()));
 
-  editCutFrames =new QAction (tr ("Cut Frames"), tr ("Cut Fra&mes"), 0, this);
+  editCutFrames =q3NewAction (tr ("Cut Frames"), tr ("Cut Fra&mes"), 0, this);
   editCutFrames->setStatusTip (tr ("Cut the selected frames to the frame clipboard"));
   editCutFrames->setWhatsThis (tr("Cut Frames\n\nCut the selected frames to the frame clipboard"));
-  connect (editCutFrames, SIGNAL (activated ()), this,SLOT (sloteditCutFrames ()));
+  connect (editCutFrames, SIGNAL (triggered ()), this,SLOT (sloteditCutFrames ()));
 
-  editCopyFrames =new QAction (tr ("Copy Frames"), tr ("C&opy Frames"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_C), this);
+  editCopyFrames =q3NewAction (tr ("Copy Frames"), tr ("C&opy Frames"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_C), this);
   editCopyFrames->setStatusTip (tr ("Copy the selected frames to the frame clipboard"));
   editCopyFrames->setWhatsThis (tr("Copy Frames\n\nCopy the selected frames to the frame clipboard"));
-  connect (editCopyFrames, SIGNAL (activated ()), this,SLOT (sloteditCopyFrames ()));
+  connect (editCopyFrames, SIGNAL (triggered ()), this,SLOT (sloteditCopyFrames ()));
 
-  editPasteFrames =new QAction (tr ("Paste Frames"), tr ("Paste &Frames"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_V), this);
+  editPasteFrames =q3NewAction (tr ("Paste Frames"), tr ("Paste &Frames"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_V), this);
   editPasteFrames->setStatusTip (tr ("Paste frames from the frame clipboard"));
   editPasteFrames->setWhatsThis (tr("Paste Frames\n\nPaste frames from the frame clipboard"));
-  connect (editPasteFrames, SIGNAL (activated ()), this, SLOT (sloteditPasteFrames ()));
+  connect (editPasteFrames, SIGNAL (triggered ()), this, SLOT (sloteditPasteFrames ()));
 
-  editClearFrames =new QAction (tr ("Clear Frames"), tr ("Clear F&rames"),QKeySequence (Qt::ALT + Qt::Key_Delete), this);
+  editClearFrames =q3NewAction (tr ("Clear Frames"), tr ("Clear F&rames"),QKeySequence (Qt::ALT + Qt::Key_Delete), this);
   editClearFrames->setStatusTip (tr ("Delete the selected frames"));
   editClearFrames->setWhatsThis (tr ("Clear Frames\n\nDelete the selected frames"));
-  connect (editClearFrames, SIGNAL (activated ()), this,SLOT (sloteditClearFrames ()));
+  connect (editClearFrames, SIGNAL (triggered ()), this,SLOT (sloteditClearFrames ()));
 
-  editSelectAllFrames = new QAction (tr ("Select All Frames"), tr ("Select All Fram&es"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_A), this);
+  editSelectAllFrames = q3NewAction (tr ("Select All Frames"), tr ("Select All Fram&es"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_A), this);
   editSelectAllFrames->setStatusTip (tr("Select all the frames in the current scene or symbol"));
   editSelectAllFrames->setWhatsThis (tr("Select All Frames\n\nSelect all the frames in the current scene or symbol"));
-  connect (editSelectAllFrames, SIGNAL (activated ()), this, SLOT (sloteditSelectAllFrames ()));
+  connect (editSelectAllFrames, SIGNAL (triggered ()), this, SLOT (sloteditSelectAllFrames ()));
 
-  editEditSymbols = new QAction (tr ("Edit Symbols"), tr ("Edit S&ymbols"),QKeySequence (Qt::CTRL + Qt::Key_E), this);
+  editEditSymbols = q3NewAction (tr ("Edit Symbols"), tr ("Edit S&ymbols"),QKeySequence (Qt::CTRL + Qt::Key_E), this);
   editEditSymbols->setStatusTip (tr ("Toggle between editing the symbol or movie scenes"));
   editEditSymbols->setWhatsThis (tr("Edit Symbols\n\nToggle between editing the symbol or movie scenes"));
-  connect (editEditSymbols, SIGNAL (activated ()), this,SLOT (sloteditEditSymbols ()));
+  connect (editEditSymbols, SIGNAL (triggered ()), this,SLOT (sloteditEditSymbols ()));
 
-  editEditSelected =new QAction (tr ("Edit Selected"), tr ("Ed&it Selected"), 0, this);
+  editEditSelected =q3NewAction (tr ("Edit Selected"), tr ("Ed&it Selected"), 0, this);
   editEditSelected->setStatusTip (tr ("Edit the contents of the selected object"));
   editEditSelected->setWhatsThis (tr("Edit Selected\n\nEdit the contents of the selected object"));
-  connect (editEditSelected, SIGNAL (activated ()), this, SLOT (sloteditEditSelected ()));
+  connect (editEditSelected, SIGNAL (triggered ()), this, SLOT (sloteditEditSelected ()));
 
-  editEditInPlace =new QAction (tr ("Edit in Place"), tr ("Edit in Place"), 0, this);
+  editEditInPlace =q3NewAction (tr ("Edit in Place"), tr ("Edit in Place"), 0, this);
   editEditInPlace->setStatusTip (tr ("Edit the symbol in place\nEdit"));
   editEditInPlace->setWhatsThis (tr ("Edit in Place\n\nEdit the symbol in place\nEdit"));
-  connect (editEditInPlace, SIGNAL (activated ()), this,SLOT (sloteditEditInPlace ()));
+  connect (editEditInPlace, SIGNAL (triggered ()), this,SLOT (sloteditEditInPlace ()));
 
-  editEditAll = new QAction (tr ("Edit All"), tr ("Edit &All"), 0, this);
+  editEditAll = q3NewAction (tr ("Edit All"), tr ("Edit &All"), 0, this);
   editEditAll->setStatusTip (tr ("Return to editing the entire drawing"));
   editEditAll->setWhatsThis (tr ("Edit All\n\nReturn to editing the entire drawing"));
-  connect (editEditAll, SIGNAL (activated ()), this,SLOT (sloteditEditAll ()));
+  connect (editEditAll, SIGNAL (triggered ()), this,SLOT (sloteditEditAll ()));
 
 
-  editPrefences = new QAction (tr ("Preferences..."), tr ("Pre&ferences..."), 0, this);
+  editPrefences = q3NewAction (tr ("Preferences..."), tr ("Pre&ferences..."), 0, this);
   editPrefences->setStatusTip (tr ("Change various default settings"));
   editPrefences->setWhatsThis (tr ("Preferences...\n\nChange various default settings"));
-  connect (editPrefences, SIGNAL (activated ()), this, SLOT (sloteditPrefences ()));
+  connect (editPrefences, SIGNAL (triggered ()), this, SLOT (sloteditPrefences ()));
 
-  editKeyboardShourtCuts =new QAction (tr ("Keyboard Shortcuts..."), tr ("&Keyboard Shortcuts..."), 0, this);
+  editKeyboardShourtCuts =q3NewAction (tr ("Keyboard Shortcuts..."), tr ("&Keyboard Shortcuts..."), 0, this);
   editKeyboardShourtCuts->setStatusTip (tr ("Customize keyboard shortcuts for menus and tools"));
   editKeyboardShourtCuts->setWhatsThis (tr("Keyboard Shortcuts...\n\nCustomize keyboard shortcuts for menus and tools"));
-  connect (editKeyboardShourtCuts, SIGNAL (activated ()), this,SLOT (sloteditKeyboardShourtCuts ()));
+  connect (editKeyboardShourtCuts, SIGNAL (triggered ()), this,SLOT (sloteditKeyboardShourtCuts ()));
 
-  editFontMapping =new QAction (tr ("Font Mapping..."), tr ("Font Mappin&g..."), 0, this);
+  editFontMapping =q3NewAction (tr ("Font Mapping..."), tr ("Font Mappin&g..."), 0, this);
   editFontMapping->setStatusTip (tr ("Customize font mappings for text with missing font"));
   editFontMapping->setWhatsThis (tr("Font Mapping...\n\nCustomize font mappings for text with missing font"));
-  connect (editFontMapping, SIGNAL (activated ()), this, SLOT (sloteditFontMapping ()));
+  connect (editFontMapping, SIGNAL (triggered ()), this, SLOT (sloteditFontMapping ()));
 
-  viewToolBar =  new QAction (tr ("Toolbar"), tr ("Tool&bar"), 0, this, 0, true);
+  viewToolBar =  q3NewAction (tr ("Toolbar"), tr ("Tool&bar"), 0, this, 0, true);
   viewToolBar->setStatusTip (tr ("Enables/disables the toolbar"));
   viewToolBar->setWhatsThis (tr ("Toolbar\n\nEnables/disables the toolbar"));
   connect (viewToolBar, SIGNAL (toggled (bool)), this, SLOT (slotViewToolBar (bool)));
 
-  viewStatusBar =new QAction (tr ("Statusbar"), tr ("&Statusbar"), 0, this, 0, true);
+  viewStatusBar =q3NewAction (tr ("Statusbar"), tr ("&Statusbar"), 0, this, 0, true);
   viewStatusBar->setStatusTip (tr ("Enables/disables the statusbar"));
   viewStatusBar->setWhatsThis (tr ("Statusbar\n\nEnables/disables the statusbar"));
   connect (viewStatusBar, SIGNAL (toggled (bool)), this,SLOT (slotViewStatusBar (bool)));
 
-  viewFirst = new QAction (tr ("First"), tr ("&First"), QKeySequence (Qt::Key_Home),this);
+  viewFirst = q3NewAction (tr ("First"), tr ("&First"), QKeySequence (Qt::Key_Home),this);
   viewFirst->setStatusTip (tr ("Go to the first scene of the movie"));
   viewFirst->setWhatsThis (tr ("First\n\nGo to the first scene of the movie"));
-  connect (viewFirst, SIGNAL (activated ()), this, SLOT (slotviewFirst ()));
+  connect (viewFirst, SIGNAL (triggered ()), this, SLOT (slotviewFirst ()));
 
-  viewPrevious = new QAction (tr ("Previous"), tr ("Previous"),QKeySequence (Qt::Key_PageUp), this);
+  viewPrevious = q3NewAction (tr ("Previous"), tr ("Previous"),QKeySequence (Qt::Key_PageUp), this);
   viewPrevious->setStatusTip (tr ("Go to the previous scene of the movie"));
   viewPrevious->setWhatsThis (tr ("Previous\n\nGo to the previous scene of the movie"));
-  connect (viewPrevious, SIGNAL (activated ()), this,SLOT (slotviewPrevious ()));
+  connect (viewPrevious, SIGNAL (triggered ()), this,SLOT (slotviewPrevious ()));
 
-  viewNext = new QAction (tr ("Next"), tr ("&Next"), QKeySequence (Qt::Key_PageDown),this);
+  viewNext = q3NewAction (tr ("Next"), tr ("&Next"), QKeySequence (Qt::Key_PageDown),this);
   viewNext->setStatusTip (tr ("Go to the next scene of the movie"));
   viewNext->setWhatsThis (tr ("Next\n\nGo to the next scene of the movie"));
-  connect (viewNext, SIGNAL (activated ()), this, SLOT (slotviewNext ()));
+  connect (viewNext, SIGNAL (triggered ()), this, SLOT (slotviewNext ()));
 
-  viewLast =new QAction (tr ("Last"), tr ("&Last"), QKeySequence (Qt::Key_End), this);
+  viewLast =q3NewAction (tr ("Last"), tr ("&Last"), QKeySequence (Qt::Key_End), this);
   viewLast->setStatusTip (tr ("Go to the last scene of the movie"));
   viewLast->setWhatsThis (tr ("Last\n\nGo to the last scene of the movie"));
-  connect (viewLast, SIGNAL (activated ()), this, SLOT (slotviewLast ()));
+  connect (viewLast, SIGNAL (triggered ()), this, SLOT (slotviewLast ()));
 
-  viewScenes = new QAction (tr ("Scenes"), tr ("&Scenes"), 0, this);
+  viewScenes = q3NewAction (tr ("Scenes"), tr ("&Scenes"), 0, this);
   viewScenes->setStatusTip (tr ("Go to a scene of the movie"));
   viewScenes->setWhatsThis (tr ("Scenes\n\nGo to a scene of the movie"));
-  connect (viewScenes, SIGNAL (activated ()), this,SLOT (slotviewScenes ()));
+  connect (viewScenes, SIGNAL (triggered ()), this,SLOT (slotviewScenes ()));
 
 
-  viewZoomIn =new QAction (tr ("Zoom In"), tr ("Zoom &In"),QKeySequence (Qt::CTRL + Qt::Key_Plus), this);
+  viewZoomIn =q3NewAction (tr ("Zoom In"), tr ("Zoom &In"),QKeySequence (Qt::CTRL + Qt::Key_Plus), this);
   viewZoomIn->setStatusTip (tr ("Show a smaller area of the drawing with more detail"));
   viewZoomIn->setWhatsThis (tr("Zoom In\n\nShow a smaller area of the drawing with more detail"));
-  connect (viewZoomIn, SIGNAL (activated ()), this,SLOT (slotviewZoomIn ()));
+  connect (viewZoomIn, SIGNAL (triggered ()), this,SLOT (slotviewZoomIn ()));
 
-  viewZoomOut =new QAction (tr ("Zoom Out"), tr ("Zoom &Out"),QKeySequence (Qt::CTRL + Qt::Key_Minus), this);
+  viewZoomOut =q3NewAction (tr ("Zoom Out"), tr ("Zoom &Out"),QKeySequence (Qt::CTRL + Qt::Key_Minus), this);
   viewZoomOut->setStatusTip (tr ("Show a larger area of the drawing with less detail"));
   viewZoomOut->setWhatsThis (tr("Zoom Out\n\nShow a larger area of the drawing with less detail"));
-  connect (viewZoomOut, SIGNAL (activated ()), this,SLOT (slotviewZoomOut ()));
+  connect (viewZoomOut, SIGNAL (triggered ()), this,SLOT (slotviewZoomOut ()));
 
-  viewMagnification25 = new QAction (tr ("25%"), tr ("&25%"), 0, this);
+  viewMagnification25 = q3NewAction (tr ("25%"), tr ("&25%"), 0, this);
   viewMagnification25->setStatusTip (tr ("Zoom to 25%"));
   viewMagnification25->setWhatsThis (tr ("25%\n\nZoom to 25%"));
-  connect (viewMagnification25, SIGNAL (activated ()), this,SLOT (slotviewMagnification25 ()));
+  connect (viewMagnification25, SIGNAL (triggered ()), this,SLOT (slotviewMagnification25 ()));
 
-  viewMagnification50 = new QAction (tr ("50%"), tr ("&50%"), 0, this);
+  viewMagnification50 = q3NewAction (tr ("50%"), tr ("&50%"), 0, this);
   viewMagnification50->setStatusTip (tr ("Zoom to 50%"));
   viewMagnification50->setWhatsThis (tr ("50%\n\nZoom to 50%"));
-  connect (viewMagnification50, SIGNAL (activated ()), this,SLOT (slotviewMagnification50 ()));
+  connect (viewMagnification50, SIGNAL (triggered ()), this,SLOT (slotviewMagnification50 ()));
 
-  viewMagnification100 =new QAction (tr ("100%"), tr ("&100%"),QKeySequence (Qt::CTRL + Qt::Key_1), this);
+  viewMagnification100 =q3NewAction (tr ("100%"), tr ("&100%"),QKeySequence (Qt::CTRL + Qt::Key_1), this);
   viewMagnification100->setStatusTip (tr ("Zoom to 100%"));
   viewMagnification100->setWhatsThis (tr ("100%\n\nZoom to 100%"));
-  connect (viewMagnification100, SIGNAL (activated ()), this,SLOT (slotviewMagnification100 ()));
+  connect (viewMagnification100, SIGNAL (triggered ()), this,SLOT (slotviewMagnification100 ()));
 
-  viewMagnification200 = new QAction (tr ("200%"), tr ("&200%"), 0, this);
+  viewMagnification200 = q3NewAction (tr ("200%"), tr ("&200%"), 0, this);
   viewMagnification200->setStatusTip (tr ("Zoom to 200%"));
   viewMagnification200->setWhatsThis (tr ("200%\n\nZoom to 200%"));
-  connect (viewMagnification200, SIGNAL (activated ()), this,SLOT (slotviewMagnification200 ()));
+  connect (viewMagnification200, SIGNAL (triggered ()), this,SLOT (slotviewMagnification200 ()));
 
-  viewMagnification400 = new QAction (tr ("400%"), tr ("&400%"), 0, this);
+  viewMagnification400 = q3NewAction (tr ("400%"), tr ("&400%"), 0, this);
   viewMagnification400->setStatusTip (tr ("Zoom to 400%"));
   viewMagnification400->setWhatsThis (tr ("400%\n\nZoom to 400%"));
-  connect (viewMagnification400, SIGNAL (activated ()), this,SLOT (slotviewMagnification400 ()));
+  connect (viewMagnification400, SIGNAL (triggered ()), this,SLOT (slotviewMagnification400 ()));
 
-  viewMagnification800 = new QAction (tr ("800%"), tr ("&800%"), 0, this);
+  viewMagnification800 = q3NewAction (tr ("800%"), tr ("&800%"), 0, this);
   viewMagnification800->setStatusTip (tr ("Zoom to 800%"));
   viewMagnification800->setWhatsThis (tr ("800%\n\nZoom to 800%"));
-  connect (viewMagnification800, SIGNAL (activated ()), this,SLOT (slotviewMagnification800 ()));
+  connect (viewMagnification800, SIGNAL (triggered ()), this,SLOT (slotviewMagnification800 ()));
 
 
-  viewShowFrame =new QAction (tr ("Show Frame"), tr ("Show &Frame"),QKeySequence (Qt::CTRL + Qt::Key_2), this);
+  viewShowFrame =q3NewAction (tr ("Show Frame"), tr ("Show &Frame"),QKeySequence (Qt::CTRL + Qt::Key_2), this);
   viewShowFrame->setStatusTip (tr ("Show the entire frame in the window"));
   viewShowFrame->setWhatsThis (tr ("Show Frame\n\nShow the entire frame in the window"));
-  connect (viewShowFrame, SIGNAL (activated ()), this,SLOT (slotviewShowFrame ()));
+  connect (viewShowFrame, SIGNAL (triggered ()), this,SLOT (slotviewShowFrame ()));
 
-  viewShowAll =new QAction (tr ("Show All"), tr ("Show &All"),QKeySequence (Qt::CTRL + Qt::Key_3), this);
+  viewShowAll =q3NewAction (tr ("Show All"), tr ("Show &All"),QKeySequence (Qt::CTRL + Qt::Key_3), this);
   viewShowAll->setStatusTip (tr("Show the entire contents of the drawing in the window"));
   viewShowAll->setWhatsThis (tr("Show All\n\nShow the entire contents of the drawing in the window"));
-  connect (viewShowAll, SIGNAL (activated ()), this,SLOT (slotviewShowAll ()));
+  connect (viewShowAll, SIGNAL (triggered ()), this,SLOT (slotviewShowAll ()));
 
-  viewOutlines =new QAction (tr ("Outlines"), tr ("O&utlines"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_O),this, "Outlines", true);
+  viewOutlines =q3NewAction (tr ("Outlines"), tr ("O&utlines"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_O),this, "Outlines", true);
   viewOutlines->setStatusTip (tr ("Show only the outines of the movie"));
   viewOutlines->setWhatsThis (tr ("Outlines\n\nShow only the outines of the movie"));
-  connect (viewOutlines, SIGNAL (activated ()), this,SLOT (slotviewOutlines ()));
+  connect (viewOutlines, SIGNAL (triggered ()), this,SLOT (slotviewOutlines ()));
 
-  viewFast =new QAction (tr ("Fast"), tr ("Fa&st"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_F),this, "Fast", true);
+  viewFast =q3NewAction (tr ("Fast"), tr ("Fa&st"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_F),this, "Fast", true);
   viewFast->setStatusTip (tr ("Show the fast view of the movie"));
   viewFast->setWhatsThis (tr ("Fast\n\nShow the fast view of the movie"));
-  connect (viewFast, SIGNAL (activated ()), this, SLOT (slotviewFast ()));
+  connect (viewFast, SIGNAL (triggered ()), this, SLOT (slotviewFast ()));
 
-  viewAntialias =new QAction (tr ("Antialias"), tr ("A&ntialias"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_A),this, "Antialias", true);
+  viewAntialias =q3NewAction (tr ("Antialias"), tr ("A&ntialias"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_A),this, "Antialias", true);
   viewAntialias->setStatusTip (tr ("Show the edges antialiased in the movie"));
   viewAntialias->setWhatsThis (tr("Antialias\n\nShow the edges antialiased in the movie"));
-  connect (viewAntialias, SIGNAL (activated ()), this,SLOT (slotviewAntialias ()));
+  connect (viewAntialias, SIGNAL (triggered ()), this,SLOT (slotviewAntialias ()));
 
-  viewAntialiasText =new QAction (tr ("Antialias Text"), tr ("Antialias &Text"), QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_T),this, "Antialias_text", true);
+  viewAntialiasText =q3NewAction (tr ("Antialias Text"), tr ("Antialias &Text"), QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_T),this, "Antialias_text", true);
   viewAntialiasText->setStatusTip (tr ("Show the edges and text antialiased in the movie"));
   viewAntialiasText->setWhatsThis (tr("Antialias Text\n\nShow the edges and text antialiased in the movie"));
-  connect (viewAntialiasText, SIGNAL (activated ()), this,SLOT (slotviewAntialiasText ()));
+  connect (viewAntialiasText, SIGNAL (triggered ()), this,SLOT (slotviewAntialiasText ()));
 
-  viewAction = new QActionGroup (this, 0);
-  viewAction->insert (viewOutlines);
-  viewAction->insert (viewFast);
-  viewAction->insert (viewAntialias);
-  viewAction->insert (viewAntialiasText);
+  viewAction = new QActionGroup (this);
+  viewAction->setExclusive (true);
+  viewAction->addAction (viewOutlines);
+  viewAction->addAction (viewFast);
+  viewAction->addAction (viewAntialias);
+  viewAction->addAction (viewAntialiasText);
 
-  viewTimeline =new QAction (tr ("Timeline"), tr ("Time&line"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_T), this,"viewTimeline", true);
+  viewTimeline =q3NewAction (tr ("Timeline"), tr ("Time&line"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_T), this,"viewTimeline", true);
   viewTimeline->setStatusTip (tr("Show or hide the animation timeline and layers controls"));
   viewTimeline->setWhatsThis (tr("Timeline\n\nShow or hide the animation timeline and layers controls"));
-  connect (viewTimeline, SIGNAL (activated ()), this,SLOT (slotviewTimeline ()));
+  connect (viewTimeline, SIGNAL (triggered ()), this,SLOT (slotviewTimeline ()));
 
-  viewWorkArea =new QAction (tr ("Work Area"), tr ("&Work Area"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_W), this,"viewWorkArea", true);
+  viewWorkArea =q3NewAction (tr ("Work Area"), tr ("&Work Area"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_W), this,"viewWorkArea", true);
   viewWorkArea->setStatusTip (tr ("Show or hide the work area that surrounds the document frame"));
   viewWorkArea->setWhatsThis (tr("Work Area\n\nShow or hide the work area that surrounds the document frame"));
-  connect (viewWorkArea, SIGNAL (activated ()), this,SLOT (slotviewWorkArea ()));
+  connect (viewWorkArea, SIGNAL (triggered ()), this,SLOT (slotviewWorkArea ()));
 
-  viewRulers =new QAction (tr ("Rulers"), tr ("&Rulers"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::ALT + Qt::Key_R), this, "viewRulers", true);
+  viewRulers =q3NewAction (tr ("Rulers"), tr ("&Rulers"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::ALT + Qt::Key_R), this, "viewRulers", true);
   viewRulers->setStatusTip (tr ("Show or hide the rulers"));
   viewRulers->setWhatsThis (tr ("Rulers\n\nShow or hide the rulers"));
-  connect (viewRulers, SIGNAL (activated ()), this,SLOT (slotviewRulers ()));
+  connect (viewRulers, SIGNAL (triggered ()), this,SLOT (slotviewRulers ()));
 
-  viewShowGrid =new QAction (tr ("Show Grid"), tr ("Show Gri&d"),QKeySequence (Qt::CTRL + Qt::Key_Apostrophe), this,"viewShowGrid", true);
+  viewShowGrid =q3NewAction (tr ("Show Grid"), tr ("Show Gri&d"),QKeySequence (Qt::CTRL + Qt::Key_Apostrophe), this,"viewShowGrid", true);
   viewShowGrid->setStatusTip (tr ("Show or hide the drawing grid"));
   viewShowGrid->setWhatsThis (tr ("Show Grid\n\nShow or hide the drawing grid"));
-  connect (viewShowGrid, SIGNAL (activated ()), this,SLOT (slotviewShowGrid ()));
+  connect (viewShowGrid, SIGNAL (triggered ()), this,SLOT (slotviewShowGrid ()));
 
-  viewSnaptoGrid =new QAction (tr ("Snap to Grid"), tr ("Sna&p to Grid"), QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Apostrophe),this, "viewShowGrid", true);
+  viewSnaptoGrid =q3NewAction (tr ("Snap to Grid"), tr ("Sna&p to Grid"), QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Apostrophe),this, "viewShowGrid", true);
   viewSnaptoGrid->setStatusTip (tr ("Show or hide the drawing grid"));
   viewSnaptoGrid->setWhatsThis (tr ("Snap to Grid\n\nShow or hide the drawing grid"));
-  connect (viewSnaptoGrid, SIGNAL (activated ()), this,SLOT (slotviewSnaptoGrid ()));
+  connect (viewSnaptoGrid, SIGNAL (triggered ()), this,SLOT (slotviewSnaptoGrid ()));
 
-  viewEditGrid =new QAction (tr ("Edit Grid..."), tr ("&Edit Grid..."),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_G), this);
+  viewEditGrid =q3NewAction (tr ("Edit Grid..."), tr ("&Edit Grid..."),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_G), this);
   viewEditGrid->setStatusTip (tr ("Open the grid properties dialog"));
   viewEditGrid->setWhatsThis (tr ("Edit Grid...\n\nOpen the grid properties dialog"));
-  connect (viewEditGrid, SIGNAL (activated ()), this,SLOT (slotviewEditGrid ()));
+  connect (viewEditGrid, SIGNAL (triggered ()), this,SLOT (slotviewEditGrid ()));
 
-  viewShowGuides =new QAction (tr ("Show Guides"), tr ("Show G&uides"),QKeySequence (Qt::CTRL + Qt::Key_Semicolon), this);
+  viewShowGuides =q3NewAction (tr ("Show Guides"), tr ("Show G&uides"),QKeySequence (Qt::CTRL + Qt::Key_Semicolon), this);
   viewShowGuides->setStatusTip (tr ("Show or hide the guides"));
   viewShowGuides->setWhatsThis (tr ("Show Guides\n\nShow or hide the guides"));
-  connect (viewShowGuides, SIGNAL (activated ()), this, SLOT (slotviewShowGuides ()));
+  connect (viewShowGuides, SIGNAL (triggered ()), this, SLOT (slotviewShowGuides ()));
 
-  viewLockGuides =new QAction (tr ("Lock Guides"), tr ("Loc&k Guides"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Semicolon), this);
+  viewLockGuides =q3NewAction (tr ("Lock Guides"), tr ("Loc&k Guides"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Semicolon), this);
   viewLockGuides->setStatusTip (tr ("Lock or unlock the guides"));
   viewLockGuides->setWhatsThis (tr ("Lock Guides\n\nLock or unlock the guides"));
-  connect (viewLockGuides, SIGNAL (activated ()), this,SLOT (slotviewLockGuides ()));
+  connect (viewLockGuides, SIGNAL (triggered ()), this,SLOT (slotviewLockGuides ()));
 
-  viewSnaptoGuides =new QAction (tr ("Snap to Guides"), tr ("Snap to Gu&ides"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Semicolon),this);
+  viewSnaptoGuides =q3NewAction (tr ("Snap to Guides"), tr ("Snap to Gu&ides"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Semicolon),this);
   viewSnaptoGuides->setStatusTip (tr ("Turn Snap to Guides on or off"));
   viewSnaptoGuides->setWhatsThis (tr ("Snap to Guides\n\nTurn Snap to Guides on or off"));
-  connect (viewSnaptoGuides, SIGNAL (activated ()), this,SLOT (slotviewSnaptoGuides ()));
+  connect (viewSnaptoGuides, SIGNAL (triggered ()), this,SLOT (slotviewSnaptoGuides ()));
 
-  viewEditGuides =new QAction (tr ("Edit Guides..."), tr ("Edit Guides..."),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_G),this);
+  viewEditGuides =q3NewAction (tr ("Edit Guides..."), tr ("Edit Guides..."),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_G),this);
   viewEditGuides->setStatusTip (tr ("Turn Snap to Guides on or off"));
   viewEditGuides->setWhatsThis (tr ("Edit Guides...\n\nTurn Snap to Guides on or off"));
-  connect (viewEditGuides, SIGNAL (activated ()), this,SLOT (slotviewEditGuides ()));
+  connect (viewEditGuides, SIGNAL (triggered ()), this,SLOT (slotviewEditGuides ()));
 
-  viewSnaptoPixels =new QAction (tr ("Snap to Pixels"), tr ("Snap to Pixels"), 0, this);
+  viewSnaptoPixels =q3NewAction (tr ("Snap to Pixels"), tr ("Snap to Pixels"), 0, this);
   viewSnaptoPixels->setStatusTip (tr ("Turn Snap to Pixels on or off"));
   viewSnaptoPixels->setWhatsThis (tr ("Snap to Pixels\n\nTurn Snap to Pixels on or off"));
-  connect (viewSnaptoPixels, SIGNAL (activated ()), this,SLOT (slotviewSnaptoPixels ()));
+  connect (viewSnaptoPixels, SIGNAL (triggered ()), this,SLOT (slotviewSnaptoPixels ()));
 
-  viewSnaptoObjects =new QAction (tr ("Snap to Objects"), tr ("Snap to O&bjects"), 0, this);
+  viewSnaptoObjects =q3NewAction (tr ("Snap to Objects"), tr ("Snap to O&bjects"), 0, this);
   viewSnaptoObjects->setStatusTip (tr("Turn snap to objects and automatic connection of lines on or off\nSnap to Objects"));
   viewSnaptoObjects->setWhatsThis (tr("Snap to Objects\n\nTurn snap to objects and automatic connection of lines on or off\nSnap to Objects"));
-  connect (viewSnaptoObjects, SIGNAL (activated ()), this, SLOT (slotviewSnaptoObjects ()));
+  connect (viewSnaptoObjects, SIGNAL (triggered ()), this, SLOT (slotviewSnaptoObjects ()));
 
-  viewShowShapeHints =new QAction (tr ("Show Shape Hints"), tr ("Show Sh&ape Hints"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_H), this);
+  viewShowShapeHints =q3NewAction (tr ("Show Shape Hints"), tr ("Show Sh&ape Hints"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_H), this);
   viewShowShapeHints->setStatusTip (tr ("Show or hide the tweening shape hints"));
   viewShowShapeHints->setWhatsThis (tr("Show Shape Hints\n\nShow or hide the tweening shape hints"));
-  connect (viewShowShapeHints, SIGNAL (activated ()), this,SLOT (slotviewShowShapeHints ()));
+  connect (viewShowShapeHints, SIGNAL (triggered ()), this,SLOT (slotviewShowShapeHints ()));
 
-  viewHideEdges =new QAction (tr ("Hide Edges"), tr ("&Hide Edges"),QKeySequence (Qt::CTRL + Qt::Key_H), this);
+  viewHideEdges =q3NewAction (tr ("Hide Edges"), tr ("&Hide Edges"),QKeySequence (Qt::CTRL + Qt::Key_H), this);
   viewHideEdges->setStatusTip (tr("When turned on  suppresses hilighting of selected items"));
   viewHideEdges->setWhatsThis (tr("Hide Edges\n\nWhen turned on  suppresses hilighting of selected items"));
-  connect (viewHideEdges, SIGNAL (activated ()), this,SLOT (slotviewHideEdges ()));
+  connect (viewHideEdges, SIGNAL (triggered ()), this,SLOT (slotviewHideEdges ()));
 
-  viewHidePanels =new QAction (tr ("Hide Panels"), tr ("Hide &Panels"), 0, this);
+  viewHidePanels =q3NewAction (tr ("Hide Panels"), tr ("Hide &Panels"), 0, this);
   viewHidePanels->setStatusTip (tr ("Hide or show all panels and tools"));
   viewHidePanels->setWhatsThis (tr ("Hide Panels\n\nHide or show all panels and tools"));
-  connect (viewHidePanels, SIGNAL (activated ()), this,SLOT (slotviewHidePanels ()));
+  connect (viewHidePanels, SIGNAL (triggered ()), this,SLOT (slotviewHidePanels ()));
 
-  insertConverttoSymbol =new QAction (tr ("Convert to Symbol..."), tr ("&Convert to Symbol..."),QKeySequence (Qt::Key_F8), this);
+  insertConverttoSymbol =q3NewAction (tr ("Convert to Symbol..."), tr ("&Convert to Symbol..."),QKeySequence (Qt::Key_F8), this);
   insertConverttoSymbol->setStatusTip (tr("Create a new symbol from the selection that can be used in multiple places"));
   insertConverttoSymbol->setWhatsThis (tr("Convert to Symbol...\n\nCreate a new symbol from the selection that can be used in multiple places"));
-  connect (insertConverttoSymbol, SIGNAL (activated ()), this,SLOT (slotinsertConverttoSymbol ()));
+  connect (insertConverttoSymbol, SIGNAL (triggered ()), this,SLOT (slotinsertConverttoSymbol ()));
 
-  insertNewSymbol =new QAction (tr ("New Symbol..."), tr ("&New Symbol..."),QKeySequence (Qt::CTRL + Qt::Key_F8), this);
+  insertNewSymbol =q3NewAction (tr ("New Symbol..."), tr ("&New Symbol..."),QKeySequence (Qt::CTRL + Qt::Key_F8), this);
   insertNewSymbol->setStatusTip (tr("Create a new symbol that can be used in multiple places"));
   insertNewSymbol->setWhatsThis (tr("New Symbol...\n\nCreate a new symbol that can be used in multiple places"));
-  connect (insertNewSymbol, SIGNAL (activated ()), this,SLOT (slotinsertNewSymbol ()));
+  connect (insertNewSymbol, SIGNAL (triggered ()), this,SLOT (slotinsertNewSymbol ()));
 
-  insertLayer = new QAction (tr ("Layer"), tr ("&Layer"), 0, this);
+  insertLayer = q3NewAction (tr ("Layer"), tr ("&Layer"), 0, this);
   insertLayer->setStatusTip (tr ("Insert a new layer in the timeline"));
   insertLayer->setWhatsThis (tr ("Layer\n\nInsert a new layer in the timeline"));
-  connect (insertLayer, SIGNAL (activated ()), this,SLOT (slotinsertLayer ()));
+  connect (insertLayer, SIGNAL (triggered ()), this,SLOT (slotinsertLayer ()));
 
-  insertLayerFolder =new QAction (tr ("Layer Folder"), tr ("Layer F&older"), 0, this);
+  insertLayerFolder =q3NewAction (tr ("Layer Folder"), tr ("Layer F&older"), 0, this);
   insertLayerFolder->setStatusTip (tr ("Insert a new layer folder in the timeline"));
   insertLayerFolder->setWhatsThis (tr("Layer Folder\n\nInsert a new layer folder in the timeline"));
-  connect (insertLayerFolder,SIGNAL (activated ()),this,SLOT(slotinsertLayerFolder ()));
-  insertMotionGuide =new QAction (tr ("Motion Guide"), tr ("&Motion Guide"), 0, this);
+  connect (insertLayerFolder,SIGNAL (triggered ()),this,SLOT(slotinsertLayerFolder ()));
+  insertMotionGuide =q3NewAction (tr ("Motion Guide"), tr ("&Motion Guide"), 0, this);
   insertMotionGuide->setStatusTip (tr ("Add a motion guide for the current layer"));
   insertMotionGuide->setWhatsThis (tr("Motion Guide\n\nAdd a motion guide for the current layer"));
-  connect (insertMotionGuide, SIGNAL (activated ()), this,SLOT (slotinsertMotionGuide ()));
+  connect (insertMotionGuide, SIGNAL (triggered ()), this,SLOT (slotinsertMotionGuide ()));
 
-  insertFrame =new QAction (tr ("Frame"), tr ("&Frame"), QKeySequence (Qt::Key_F5),this);
+  insertFrame =q3NewAction (tr ("Frame"), tr ("&Frame"), QKeySequence (Qt::Key_F5),this);
   insertFrame->setStatusTip (tr ("Insert frames in the selected layers"));
   insertFrame->setWhatsThis (tr ("Frame\n\nInsert frames in the selected layers"));
-  connect (insertFrame, SIGNAL (activated ()), this,SLOT (slotinsertFrame ()));
+  connect (insertFrame, SIGNAL (triggered ()), this,SLOT (slotinsertFrame ()));
 
-  insertRemoveFrames =new QAction (tr ("Remove Frames"), tr ("R&emove Frames"),QKeySequence (Qt::SHIFT + Qt::Key_F5), this);
+  insertRemoveFrames =q3NewAction (tr ("Remove Frames"), tr ("R&emove Frames"),QKeySequence (Qt::SHIFT + Qt::Key_F5), this);
   insertRemoveFrames->setStatusTip (tr ("Delete the selected frames"));
   insertRemoveFrames->setWhatsThis (tr ("Remove Frames\n\nDelete the selected frames"));
-  connect (insertRemoveFrames, SIGNAL (activated ()), this,SLOT (slotinsertRemoveFrames ()));
+  connect (insertRemoveFrames, SIGNAL (triggered ()), this,SLOT (slotinsertRemoveFrames ()));
 
-  insertKeyframe =new QAction (tr ("Keyframe"), tr ("&Keyframe"), QKeySequence (Qt::Key_F6),this);
+  insertKeyframe =q3NewAction (tr ("Keyframe"), tr ("&Keyframe"), QKeySequence (Qt::Key_F6),this);
   insertKeyframe->setStatusTip (tr("Make keyframes with the same contents as the selected frames"));
   insertKeyframe->setWhatsThis (tr("Keyframe\n\nMake keyframes with the same contents as the selected frames"));
-  connect (insertKeyframe, SIGNAL (activated ()), this,SLOT (slotinsertKeyframe ()));
+  connect (insertKeyframe, SIGNAL (triggered ()), this,SLOT (slotinsertKeyframe ()));
 
-  insertBlankKeyframe =new QAction (tr ("Blank Keyframe"), tr ("&Blank Keyframe"),QKeySequence (Qt::Key_F7), this);
+  insertBlankKeyframe =q3NewAction (tr ("Blank Keyframe"), tr ("&Blank Keyframe"),QKeySequence (Qt::Key_F7), this);
   insertBlankKeyframe->setStatusTip (tr ("Create blank keyframes at the selected frames"));
   insertBlankKeyframe->setWhatsThis (tr("Blank Keyframe\n\nCreate blank keyframes at the selected frames"));
-  connect (insertBlankKeyframe, SIGNAL (activated ()), this,SLOT (slotinsertBlankKeyframe ()));
+  connect (insertBlankKeyframe, SIGNAL (triggered ()), this,SLOT (slotinsertBlankKeyframe ()));
 
-  insertClearKeyframe =new QAction (tr ("Clear Keyframe"), tr ("Cle&ar Keyframe"),QKeySequence (Qt::SHIFT + Qt::Key_F6), this);
+  insertClearKeyframe =q3NewAction (tr ("Clear Keyframe"), tr ("Cle&ar Keyframe"),QKeySequence (Qt::SHIFT + Qt::Key_F6), this);
   insertClearKeyframe->setStatusTip (tr ("Delete the selected keyframes"));
   insertClearKeyframe->setWhatsThis (tr ("Clear Keyframe\n\nDelete the selected keyframes"));
-  connect (insertClearKeyframe, SIGNAL (activated ()), this,SLOT (slotinsertClearKeyframe ()));
+  connect (insertClearKeyframe, SIGNAL (triggered ()), this,SLOT (slotinsertClearKeyframe ()));
 
-  insertCreateMotionTween =new QAction (tr ("Create Motion Tween"), tr ("Create Motion &Tween"), 0,this);
+  insertCreateMotionTween =q3NewAction (tr ("Create Motion Tween"), tr ("Create Motion &Tween"), 0,this);
   insertCreateMotionTween->setStatusTip (tr ("Set the selected frames to motion tweening"));
   insertCreateMotionTween->setWhatsThis (tr("Create Motion Tween\n\nSet the selected frames to motion tweening"));
-  connect (insertCreateMotionTween, SIGNAL (activated ()), this,SLOT (slotinsertCreateMotionTween ()));
+  connect (insertCreateMotionTween, SIGNAL (triggered ()), this,SLOT (slotinsertCreateMotionTween ()));
 
-  insertScene = new QAction (tr ("Scene"), tr ("&Scene"), 0, this);
+  insertScene = q3NewAction (tr ("Scene"), tr ("&Scene"), 0, this);
   insertScene->setStatusTip (tr ("Add a new scene after the current scene"));
   insertScene->setWhatsThis (tr ("Scene\n\nAdd a new scene after the current scene"));
-  connect (insertScene, SIGNAL (activated ()), this,SLOT (slotinsertScene ()));
+  connect (insertScene, SIGNAL (triggered ()), this,SLOT (slotinsertScene ()));
 
-  insertRemoveScene =new QAction (tr ("Remove Scene"), tr ("&Remove Scene"), 0, this);
+  insertRemoveScene =q3NewAction (tr ("Remove Scene"), tr ("&Remove Scene"), 0, this);
   insertRemoveScene->setStatusTip (tr ("Delete the current scene"));
   insertRemoveScene->setWhatsThis (tr ("Remove Scene\n\nDelete the current scene"));
-  connect (insertRemoveScene, SIGNAL (activated ()), this,SLOT (slotinsertRemoveScene ()));
+  connect (insertRemoveScene, SIGNAL (triggered ()), this,SLOT (slotinsertRemoveScene ()));
 
-  modifyLayer = new QAction (tr ("&Layer..."), tr ("&Layer..."), 0, this);
+  modifyLayer = q3NewAction (tr ("&Layer..."), tr ("&Layer..."), 0, this);
   modifyLayer->setStatusTip (tr ("Edit the properties of the current layer"));
   modifyLayer->setWhatsThis (tr("&Layer...\n\nEdit the properties of the current layer"));
-  connect (modifyLayer, SIGNAL (activated ()), this,SLOT (slotmodifyLayer ()));
+  connect (modifyLayer, SIGNAL (triggered ()), this,SLOT (slotmodifyLayer ()));
 
-  modifyScene = new QAction (tr ("&Scene..."), tr ("&Scene..."), 0, this);
+  modifyScene = q3NewAction (tr ("&Scene..."), tr ("&Scene..."), 0, this);
   modifyScene->setStatusTip (tr("Show or change a list of the scenes in the current movie"));
   modifyScene->setWhatsThis (tr("&Scene...\n\nShow or change a list of the scenes in the current movie"));
-  connect (modifyScene, SIGNAL (activated ()), this,SLOT (slotmodifyScene ()));
+  connect (modifyScene, SIGNAL (triggered ()), this,SLOT (slotmodifyScene ()));
 
-  modifyDocument =new QAction (tr ("&Document..."), tr ("&Document..."),QKeySequence (Qt::CTRL + Qt::Key_M), this);
+  modifyDocument =q3NewAction (tr ("&Document..."), tr ("&Document..."),QKeySequence (Qt::CTRL + Qt::Key_M), this);
   modifyDocument->setStatusTip (tr("Change the size and other attributes of the document"));
   modifyDocument->setWhatsThis (tr("&Document...\n\nChange the size and other attributes of the document"));
-  connect (modifyDocument, SIGNAL (activated ()), this,SLOT (slotmodifyDocument ()));
+  connect (modifyDocument, SIGNAL (triggered ()), this,SLOT (slotmodifyDocument ()));
 
-  modifySmooth = new QAction (tr ("&Smooth"), tr ("&Smooth"), 0, this);
+  modifySmooth = q3NewAction (tr ("&Smooth"), tr ("&Smooth"), 0, this);
   modifySmooth->setStatusTip (tr ("Smooth the selected lines\nSmooth"));
   modifySmooth->setWhatsThis (tr ("&Smooth\n\nSmooth the selected lines\nSmooth"));
-  connect (modifySmooth, SIGNAL (activated ()), this,SLOT (slotmodifySmooth ()));
+  connect (modifySmooth, SIGNAL (triggered ()), this,SLOT (slotmodifySmooth ()));
 
-  modifyStraighten =new QAction (tr ("S&traighten"), tr ("S&traighten"), 0, this);
+  modifyStraighten =q3NewAction (tr ("S&traighten"), tr ("S&traighten"), 0, this);
   modifyStraighten->setStatusTip (tr ("Straighten the selected lines\nStraighten"));
   modifyStraighten->setWhatsThis (tr("S&traighten\n\nStraighten the selected lines\nStraighten"));
-  connect (modifyStraighten, SIGNAL (activated ()), this,SLOT (slotmodifyStraighten ()));
+  connect (modifyStraighten, SIGNAL (triggered ()), this,SLOT (slotmodifyStraighten ()));
 
-  modifyOptimize = new QAction (tr ("&Optimize..."), tr ("&Optimize..."),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_C), this);
+  modifyOptimize = q3NewAction (tr ("&Optimize..."), tr ("&Optimize..."),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_C), this);
   modifyOptimize->setStatusTip (tr("Smooth the selected curves so that they use less resources"));
   modifyOptimize-> setWhatsThis (tr("&Optimize...\n\nSmooth the selected curves so that they use less resources"));
-  connect (modifyOptimize, SIGNAL (activated ()), this,SLOT (slotmodifyOptimize ()));
+  connect (modifyOptimize, SIGNAL (triggered ()), this,SLOT (slotmodifyOptimize ()));
 
-  modifyConvertLinestoFills =new QAction (tr ("&Convert Lines to Fills"), tr ("&Convert Lines to Fills"), 0, this);
+  modifyConvertLinestoFills =q3NewAction (tr ("&Convert Lines to Fills"), tr ("&Convert Lines to Fills"), 0, this);
   modifyConvertLinestoFills->setStatusTip (tr ("Convert lines to filled areas"));
   modifyConvertLinestoFills->setWhatsThis (tr("&Convert Lines to Fills\n\nConvert lines to filled areas"));
-  connect (modifyConvertLinestoFills, SIGNAL (activated ()), this,SLOT (slotmodifyConvertLinestoFills ()));
+  connect (modifyConvertLinestoFills, SIGNAL (triggered ()), this,SLOT (slotmodifyConvertLinestoFills ()));
 
-  modifyExpandFill =new QAction (tr ("&Expand Fill..."), tr ("&Expand Fill..."), 0, this);
+  modifyExpandFill =q3NewAction (tr ("&Expand Fill..."), tr ("&Expand Fill..."), 0, this);
   modifyExpandFill->setStatusTip (tr ("Expand or inset the edges of the selected shapes"));
   modifyExpandFill->setWhatsThis (tr("&Expand Fill...\n\nExpand or inset the edges of the selected shapes"));
-  connect (modifyExpandFill, SIGNAL (activated ()), this,SLOT (slotmodifyExpandFill ()));
+  connect (modifyExpandFill, SIGNAL (triggered ()), this,SLOT (slotmodifyExpandFill ()));
 
-  modifySoftenFillEdges =new QAction (tr ("So&ften Fill Edges..."), tr ("So&ften Fill Edges..."), 0, this);
+  modifySoftenFillEdges =q3NewAction (tr ("So&ften Fill Edges..."), tr ("So&ften Fill Edges..."), 0, this);
   modifySoftenFillEdges->setStatusTip (tr("Blend the edges of the selected shapes to transparent"));
   modifySoftenFillEdges->setWhatsThis (tr("So&ften Fill Edges...\n\nBlend the edges of the selected shapes to transparent"));
-  connect (modifySoftenFillEdges, SIGNAL (activated ()), this,SLOT (slotmodifySoftenFillEdges ()));
+  connect (modifySoftenFillEdges, SIGNAL (triggered ()), this,SLOT (slotmodifySoftenFillEdges ()));
 
-  modifyAddShapeHint =new QAction (tr ("&Add Shape Hint"), tr ("&Add Shape Hint"), QKeySequence (Qt::CTRL + Qt::Key_H), this);
+  modifyAddShapeHint =q3NewAction (tr ("&Add Shape Hint"), tr ("&Add Shape Hint"), QKeySequence (Qt::CTRL + Qt::Key_H), this);
   modifyAddShapeHint->setStatusTip (tr ("Add a tweening shape hint"));
   modifyAddShapeHint->setWhatsThis (tr ("&Add Shape Hint\n\nAdd a tweening shape hint"));
-  connect (modifyAddShapeHint, SIGNAL (activated ()), this, SLOT (slotmodifyAddShapeHint ()));
+  connect (modifyAddShapeHint, SIGNAL (triggered ()), this, SLOT (slotmodifyAddShapeHint ()));
 
-  modifyRemoveAllHints =new QAction (tr ("Re&move All Hints"), tr ("Re&move All Hints"), 0, this);
+  modifyRemoveAllHints =q3NewAction (tr ("Re&move All Hints"), tr ("Re&move All Hints"), 0, this);
   modifyRemoveAllHints->setStatusTip (tr ("Remove all the tweening shape hints"));
   modifyRemoveAllHints->setWhatsThis (tr("Re&move All Hints\n\nRemove all the tweening shape hints"));
-  connect (modifyRemoveAllHints, SIGNAL (activated ()), this,SLOT (slotmodifyRemoveAllHints ()));
+  connect (modifyRemoveAllHints, SIGNAL (triggered ()), this,SLOT (slotmodifyRemoveAllHints ()));
 
-  modifySwapSymbol = new QAction (tr ("Swap Symbol..."), tr ("Swap Symbol..."), 0, this);
+  modifySwapSymbol = q3NewAction (tr ("Swap Symbol..."), tr ("Swap Symbol..."), 0, this);
   modifySwapSymbol->setStatusTip (tr ("Replaces an instance with another symbol"));
   modifySwapSymbol->setWhatsThis (tr("Swap Symbol...\n\nReplaces an instance with another symbol"));
-  connect (modifySwapSymbol, SIGNAL (activated ()), this,SLOT (slotmodifySwapSymbol ()));
+  connect (modifySwapSymbol, SIGNAL (triggered ()), this,SLOT (slotmodifySwapSymbol ()));
 
-  modifyDuplicateSymbol =new QAction (tr ("Duplicate Symbol..."), tr ("Duplicate Symbol..."), 0, this);
+  modifyDuplicateSymbol =q3NewAction (tr ("Duplicate Symbol..."), tr ("Duplicate Symbol..."), 0, this);
   modifyDuplicateSymbol->setStatusTip (tr ("Replaces an instance with a copy of the selected symbol"));
   modifyDuplicateSymbol->setWhatsThis (tr("Duplicate Symbol...\n\nReplaces an instance with a copy of the selected symbol"));
-  connect (modifyDuplicateSymbol, SIGNAL (activated ()), this,SLOT (slotmodifyDuplicateSymbol ()));
+  connect (modifyDuplicateSymbol, SIGNAL (triggered ()), this,SLOT (slotmodifyDuplicateSymbol ()));
 
-  modifySwapBitmap =new QAction (tr ("Swap Bitmap..."), tr ("Swap Bitmap..."), 0, this);
+  modifySwapBitmap =q3NewAction (tr ("Swap Bitmap..."), tr ("Swap Bitmap..."), 0, this);
   modifySwapBitmap->setStatusTip (tr ("Replaces an instance with another bitmap symbol"));
   modifySwapBitmap->setWhatsThis (tr("Swap Bitmap...\n\nReplaces an instance with another bitmap symbol"));
-  connect (modifySwapBitmap, SIGNAL (activated ()), this,SLOT (slotmodifySwapBitmap ()));
+  connect (modifySwapBitmap, SIGNAL (triggered ()), this,SLOT (slotmodifySwapBitmap ()));
 
-  modifyTraceBitmap = new QAction (tr ("Trace &Bitmap..."), tr ("Trace &Bitmap..."), 0, this);
+  modifyTraceBitmap = q3NewAction (tr ("Trace &Bitmap..."), tr ("Trace &Bitmap..."), 0, this);
   modifyTraceBitmap->setStatusTip (tr ("Convert a bitmap object to curves"));
   modifyTraceBitmap->setWhatsThis (tr("Trace &Bitmap...\n\nConvert a bitmap object to curves"));
-  connect (modifyTraceBitmap, SIGNAL (activated ()), this,SLOT (slotmodifyTraceBitmap ()));
+  connect (modifyTraceBitmap, SIGNAL (triggered ()), this,SLOT (slotmodifyTraceBitmap ()));
 
-  modifyFreeTransform =new QAction (tr ("&Free Transform"), tr ("&Free Transform"), 0, this);
+  modifyFreeTransform =q3NewAction (tr ("&Free Transform"), tr ("&Free Transform"), 0, this);
   modifyFreeTransform->setStatusTip (tr("Show handles to rotate  slant  or skew the selection\nFree Transform"));
   modifyFreeTransform->setWhatsThis (tr("&Free Transform\n\nShow handles to rotate  slant  or skew the selection\nFree Transform"));
-  connect (modifyFreeTransform, SIGNAL (activated ()), this,SLOT (slotmodifyFreeTransform ()));
+  connect (modifyFreeTransform, SIGNAL (triggered ()), this,SLOT (slotmodifyFreeTransform ()));
 
-  modifyDistort = new QAction (tr ("&Distort"), tr ("&Distort"), 0, this);
+  modifyDistort = q3NewAction (tr ("&Distort"), tr ("&Distort"), 0, this);
   modifyDistort->setStatusTip (tr ("Show handles to distort the selection\nDistort"));
   modifyDistort->setWhatsThis (tr("&Distort\n\nShow handles to distort the selection\nDistort"));
-  connect (modifyDistort, SIGNAL (activated ()), this,SLOT (slotmodifyDistort ()));
+  connect (modifyDistort, SIGNAL (triggered ()), this,SLOT (slotmodifyDistort ()));
 
-  modifyEnvelope =new QAction (tr ("&Envelope"), tr ("&Envelope"), 0, this);
+  modifyEnvelope =q3NewAction (tr ("&Envelope"), tr ("&Envelope"), 0, this);
   modifyEnvelope->setStatusTip (tr ("Show handles to envelope the selection\nEnvelope"));
   modifyEnvelope->setWhatsThis (tr("&Envelope\n\nShow handles to envelope the selection\nEnvelope"));
-  connect (modifyEnvelope, SIGNAL (activated ()), this, SLOT (slotmodifyEnvelope ()));
+  connect (modifyEnvelope, SIGNAL (triggered ()), this, SLOT (slotmodifyEnvelope ()));
 
-  modifyScale = new QAction (tr ("&Scale"), tr ("&Scale"), 0, this);
+  modifyScale = q3NewAction (tr ("&Scale"), tr ("&Scale"), 0, this);
   modifyScale->setStatusTip (tr("Show handles to enlarge or shrink the selection\nScale"));
   modifyScale->setWhatsThis (tr("&Scale\n\nShow handles to enlarge or shrink the selection\nScale"));
-  connect (modifyScale, SIGNAL (activated ()), this,SLOT (slotmodifyScale ()));
+  connect (modifyScale, SIGNAL (triggered ()), this,SLOT (slotmodifyScale ()));
 
-  modifyRotateandSkew =new QAction (tr ("&Rotate and Skew"), tr ("&Rotate and Skew"), 0, this);
+  modifyRotateandSkew =q3NewAction (tr ("&Rotate and Skew"), tr ("&Rotate and Skew"), 0, this);
   modifyRotateandSkew->setStatusTip (tr ("Show handles to rotate or slant the selection\nRotate and Skew"));
   modifyRotateandSkew->setWhatsThis (tr ("&Rotate and Skew\n\nShow handles to rotate or slant the selection\nRotate and Skew"));
-  connect (modifyRotateandSkew, SIGNAL (activated ()), this,SLOT (slotmodifyRotateandSkew ()));
+  connect (modifyRotateandSkew, SIGNAL (triggered ()), this,SLOT (slotmodifyRotateandSkew ()));
 
-  modifyScaleandRotate =new QAction (tr ("S&cale and Rotate..."), tr ("S&cale and Rotate..."), QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_S), this);
+  modifyScaleandRotate =q3NewAction (tr ("S&cale and Rotate..."), tr ("S&cale and Rotate..."), QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_S), this);
   modifyScaleandRotate->setStatusTip (tr("Scale and/or rotate the selection using numeric values"));
   modifyScaleandRotate->setWhatsThis (tr("S&cale and Rotate...\n\nScale and/or rotate the selection using numeric values"));
-  connect (modifyScaleandRotate, SIGNAL (activated ()), this,SLOT (slotmodifyScaleandRotate ()));
+  connect (modifyScaleandRotate, SIGNAL (triggered ()), this,SLOT (slotmodifyScaleandRotate ()));
 
-  modifyRotate90CW =new QAction (tr ("Rotate 9&0 CW"), tr ("Rotate 9&0 CW"), 0, this);
+  modifyRotate90CW =q3NewAction (tr ("Rotate 9&0 CW"), tr ("Rotate 9&0 CW"), 0, this);
   modifyRotate90CW->setStatusTip (tr ("Rotate the selection 90 degrees to the right"));
   modifyRotate90CW->setWhatsThis (tr("Rotate 9&0 CW\n\nRotate the selection 90 degrees to the right"));
-  connect (modifyRotate90CW, SIGNAL (activated ()), this,SLOT (slotmodifyRotate90CW ()));
+  connect (modifyRotate90CW, SIGNAL (triggered ()), this,SLOT (slotmodifyRotate90CW ()));
 
-  modifyRotate90CCW =new QAction (tr ("Rotate &90 CCW"), tr ("Rotate &90 CCW"), 0, this);
+  modifyRotate90CCW =q3NewAction (tr ("Rotate &90 CCW"), tr ("Rotate &90 CCW"), 0, this);
   modifyRotate90CCW->setStatusTip (tr ("Rotate the selection 90 degrees to the left"));
   modifyRotate90CCW->setWhatsThis (tr("Rotate &90 CCW\n\nRotate the selection 90 degrees to the left"));
-  connect (modifyRotate90CCW, SIGNAL (activated ()), this,SLOT (slotmodifyRotate90CCW ()));
+  connect (modifyRotate90CCW, SIGNAL (triggered ()), this,SLOT (slotmodifyRotate90CCW ()));
 
-  modifyFlipVertical =new QAction (tr ("Flip &Vertical"), tr ("Flip &Vertical"), 0, this);
+  modifyFlipVertical =q3NewAction (tr ("Flip &Vertical"), tr ("Flip &Vertical"), 0, this);
   modifyFlipVertical->setStatusTip (tr ("Flip the selection so it appears upside-down"));
   modifyFlipVertical->setWhatsThis (tr("Flip &Vertical\n\nFlip the selection so it appears upside-down"));
-  connect (modifyFlipVertical, SIGNAL (activated ()), this,SLOT (slotmodifyFlipVertical ()));
+  connect (modifyFlipVertical, SIGNAL (triggered ()), this,SLOT (slotmodifyFlipVertical ()));
 
-  modifyFlipHorizontal =new QAction (tr ("Flip &Horizontal"), tr ("Flip &Horizontal"), 0, this);
+  modifyFlipHorizontal =q3NewAction (tr ("Flip &Horizontal"), tr ("Flip &Horizontal"), 0, this);
   modifyFlipHorizontal->setStatusTip (tr("Flip the selection so that the left and right sides are reversed"));
   modifyFlipHorizontal->setWhatsThis (tr("Flip &Horizontal\n\nFlip the selection so that the left and right sides are reversed"));
-  connect (modifyFlipHorizontal, SIGNAL (activated ()), this,SLOT (slotmodifyFlipHorizontal ()));
+  connect (modifyFlipHorizontal, SIGNAL (triggered ()), this,SLOT (slotmodifyFlipHorizontal ()));
 
 
-  modifyRemoveTransform =new QAction (tr ("Remove Trans&form"), tr ("Remove Trans&form"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
+  modifyRemoveTransform =q3NewAction (tr ("Remove Trans&form"), tr ("Remove Trans&form"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this);
   modifyRemoveTransform->setStatusTip (tr("Remove any rotation or scaling from the selected objects"));
   modifyRemoveTransform->setWhatsThis (tr("Remove Trans&form\n\nRemove any rotation or scaling from the selected objects"));
-  connect (modifyRemoveTransform, SIGNAL (activated ()), this,SLOT (slotmodifyRemoveTransform ()));
+  connect (modifyRemoveTransform, SIGNAL (triggered ()), this,SLOT (slotmodifyRemoveTransform ()));
 
-  modifyBringtoFront =new QAction (tr ("Bring to &Front"), tr ("Bring to &Front"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Up), this);
+  modifyBringtoFront =q3NewAction (tr ("Bring to &Front"), tr ("Bring to &Front"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Up), this);
   modifyBringtoFront->setStatusTip (tr("Move the selected objects in to the front of their layer"));
   modifyBringtoFront->setWhatsThis (tr("Bring to &Front\n\nMove the selected objects in to the front of their layer"));
-  connect (modifyBringtoFront, SIGNAL (activated ()), this,SLOT (slotmodifyBringtoFront ()));
+  connect (modifyBringtoFront, SIGNAL (triggered ()), this,SLOT (slotmodifyBringtoFront ()));
 
-  modifyBringForward =new QAction (tr ("B&ring Forward"), tr ("B&ring Forward"), 0, this);
+  modifyBringForward =q3NewAction (tr ("B&ring Forward"), tr ("B&ring Forward"), 0, this);
   modifyBringForward->setStatusTip (tr("Move the selected objects ahead of any overlaping objects"));
   modifyBringForward->setWhatsThis (tr("B&ring Forward\n\nMove the selected objects ahead of any overlaping objects"));
-  connect (modifyBringForward, SIGNAL (activated ()), this,SLOT (slotmodifyBringForward ()));
+  connect (modifyBringForward, SIGNAL (triggered ()), this,SLOT (slotmodifyBringForward ()));
 
-  modifySendBackward =new QAction (tr ("S&end Backward"), tr ("S&end Backward"), 0, this);
+  modifySendBackward =q3NewAction (tr ("S&end Backward"), tr ("S&end Backward"), 0, this);
   modifySendBackward->setStatusTip (tr("Move the selected objects behind any overlaping objects"));
   modifySendBackward->setWhatsThis (tr("S&end Backward\n\nMove the selected objects behind any overlaping objects"));
-  connect (modifySendBackward, SIGNAL (activated ()), this,SLOT (slotmodifySendBackward ()));
+  connect (modifySendBackward, SIGNAL (triggered ()), this,SLOT (slotmodifySendBackward ()));
 
 
-  modifySendtoBack =new QAction (tr ("Send to &Back"), tr ("Send to &Back"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Down), this);
+  modifySendtoBack =q3NewAction (tr ("Send to &Back"), tr ("Send to &Back"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Down), this);
   modifySendtoBack->setStatusTip (tr("Move the selected objects to the back of their layer"));
   modifySendtoBack->setWhatsThis (tr ("Send to &Back\n\nMove the selected objects to the back of their layer"));
-  connect (modifySendtoBack, SIGNAL (activated ()), this,SLOT (slotmodifySendtoBack ()));
+  connect (modifySendtoBack, SIGNAL (triggered ()), this,SLOT (slotmodifySendtoBack ()));
 
-  modifyLock =new QAction (tr ("&Lock"), tr ("&Lock"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_L), this);
+  modifyLock =q3NewAction (tr ("&Lock"), tr ("&Lock"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_L), this);
   modifyLock->setStatusTip (tr("Lock the selected objects so that they cannot be accidentally modified"));
   modifyLock->setWhatsThis (tr("&Lock\n\nLock the selected objects so that they cannot be accidentally modified"));
-  connect (modifyLock, SIGNAL (activated ()), this,SLOT (slotmodifyLock ()));
+  connect (modifyLock, SIGNAL (triggered ()), this,SLOT (slotmodifyLock ()));
 
-  modifyUnlockAll =new QAction (tr ("&Unlock All"), tr ("&Unlock All"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_L),this);
+  modifyUnlockAll =q3NewAction (tr ("&Unlock All"), tr ("&Unlock All"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_L),this);
   modifyUnlockAll->setStatusTip (tr ("Unlock all of the locked objects in the drawing"));
   modifyUnlockAll->setWhatsThis (tr("&Unlock All\n\nUnlock all of the locked objects in the drawing"));
-  connect (modifyUnlockAll, SIGNAL (activated ()), this,SLOT (slotmodifyUnlockAll ()));
+  connect (modifyUnlockAll, SIGNAL (triggered ()), this,SLOT (slotmodifyUnlockAll ()));
 
-  modifyReverse = new QAction (tr ("&Reverse"), tr ("&Reverse"), 0, this);
+  modifyReverse = q3NewAction (tr ("&Reverse"), tr ("&Reverse"), 0, this);
   modifyReverse->setStatusTip (tr("Reverse selected frames so the animation plays backwards"));
   modifyReverse->setWhatsThis (tr("&Reverse\n\nReverse selected frames so the animation plays backwards"));
-  connect (modifyReverse, SIGNAL (activated ()), this,SLOT (slotmodifyReverse ()));
+  connect (modifyReverse, SIGNAL (triggered ()), this,SLOT (slotmodifyReverse ()));
 
-  modifySynchronizeSymbols =new QAction (tr ("&Synchronize Symbols"), tr ("&Synchronize Symbols"), 0,this);
+  modifySynchronizeSymbols =q3NewAction (tr ("&Synchronize Symbols"), tr ("&Synchronize Symbols"), 0,this);
   modifySynchronizeSymbols->setStatusTip (tr("Adjust the symbol first frames to loop continuously across keyframes"));
   modifySynchronizeSymbols->setWhatsThis (tr("&Synchronize Symbols\n\nAdjust the symbol first frames to loop continuously across keyframes"));
-  connect (modifySynchronizeSymbols, SIGNAL (activated ()), this,SLOT (slotmodifySynchronizeSymbols ()));
+  connect (modifySynchronizeSymbols, SIGNAL (triggered ()), this,SLOT (slotmodifySynchronizeSymbols ()));
 
-  modifyConverttoKeyframes =new QAction (tr ("Convert to &Keyframes"), tr ("Convert to &Keyframes"),0, this);
+  modifyConverttoKeyframes =q3NewAction (tr ("Convert to &Keyframes"), tr ("Convert to &Keyframes"),0, this);
   modifyConverttoKeyframes->setStatusTip (tr ("Convert the selected frames to keyframes"));
   modifyConverttoKeyframes->setWhatsThis (tr("Convert to &Keyframes\n\nConvert the selected frames to keyframes"));
-  connect (modifyConverttoKeyframes, SIGNAL (activated ()), this,SLOT (slotmodifyConverttoKeyframes ()));
+  connect (modifyConverttoKeyframes, SIGNAL (triggered ()), this,SLOT (slotmodifyConverttoKeyframes ()));
 
-  modifyConverttoBlankKeyframes =new QAction (tr ("Convert to &Blank Keyframes"),tr ("Convert to &Blank Keyframes"), 0, this);
+  modifyConverttoBlankKeyframes =q3NewAction (tr ("Convert to &Blank Keyframes"),tr ("Convert to &Blank Keyframes"), 0, this);
   modifyConverttoBlankKeyframes->setStatusTip (tr ("Convert selected frames to blank keyframes"));
   modifyConverttoBlankKeyframes->setWhatsThis (tr("Convert to &Blank Keyframes\n\nConvert selected frames to blank keyframes"));
-  connect (modifyConverttoBlankKeyframes, SIGNAL (activated ()), this,SLOT (slotmodifyConverttoBlankKeyframes ()));
+  connect (modifyConverttoBlankKeyframes, SIGNAL (triggered ()), this,SLOT (slotmodifyConverttoBlankKeyframes ()));
 
-  modifyGroup =new QAction (tr ("&Group"), tr ("&Group"), QKeySequence (Qt::CTRL + Qt::Key_G), this);
+  modifyGroup =q3NewAction (tr ("&Group"), tr ("&Group"), QKeySequence (Qt::CTRL + Qt::Key_G), this);
   modifyGroup->setStatusTip (tr ("Create a new group object"));
   modifyGroup->setWhatsThis (tr ("&Group\n\nCreate a new group object"));
-  connect (modifyGroup, SIGNAL (activated ()), this,SLOT (slotmodifyGroup ()));
+  connect (modifyGroup, SIGNAL (triggered ()), this,SLOT (slotmodifyGroup ()));
 
-  modifyUngroup =new QAction (tr ("&Ungroup"), tr ("&Ungroup"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_G), this);
+  modifyUngroup =q3NewAction (tr ("&Ungroup"), tr ("&Ungroup"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_G), this);
   modifyUngroup->setStatusTip (tr ("Ungroup the selected group objects"));
   modifyUngroup->setWhatsThis (tr ("&Ungroup\n\nUngroup the selected group objects"));
-  connect (modifyUngroup, SIGNAL (activated ()), this,SLOT (slotmodifyUngroup ()));
+  connect (modifyUngroup, SIGNAL (triggered ()), this,SLOT (slotmodifyUngroup ()));
 
-  modifyBreakApart =new QAction (tr ("Brea&k Apart"), tr ("Brea&k Apart"),QKeySequence (Qt::CTRL + Qt::Key_B), this);
+  modifyBreakApart =q3NewAction (tr ("Brea&k Apart"), tr ("Brea&k Apart"),QKeySequence (Qt::CTRL + Qt::Key_B), this);
   modifyBreakApart->setStatusTip(tr("Break apart the selected objects into their component pieces"));
   modifyBreakApart->setWhatsThis(tr("Brea&k Apart\n\nBreak apart the selected objects into their component pieces"));
-  connect (modifyBreakApart, SIGNAL (activated ()), this,SLOT (slotmodifyBreakApart ()));
+  connect (modifyBreakApart, SIGNAL (triggered ()), this,SLOT (slotmodifyBreakApart ()));
 
-  modifyDistributetoLayers =new QAction (tr ("Distribute to Layers"), tr ("Distribute to Layers"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_D), this);
+  modifyDistributetoLayers =q3NewAction (tr ("Distribute to Layers"), tr ("Distribute to Layers"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_D), this);
   modifyDistributetoLayers->setStatusTip (tr ("Move the selected objects onto their own layers"));
   modifyDistributetoLayers->setWhatsThis (tr("Distribute to Layers\n\nMove the selected objects onto their own layers"));
-  connect (modifyDistributetoLayers, SIGNAL (activated ()), this,SLOT (slotmodifyDistributetoLayers ()));
+  connect (modifyDistributetoLayers, SIGNAL (triggered ()), this,SLOT (slotmodifyDistributetoLayers ()));
 
-  textFontFace =new QAction (tr ("Font Face"), tr ("Font Face"), 0, this);
+  textFontFace =q3NewAction (tr ("Font Face"), tr ("Font Face"), 0, this);
   textFontFace->setStatusTip (tr ("Select the Font to be used"));
   textFontFace->setWhatsThis (tr ("Font Face\n\nSelect the Font to be used"));
-  connect (textFontFace, SIGNAL (activated ()), this,SLOT (slottextFontFace ()));
+  connect (textFontFace, SIGNAL (triggered ()), this,SLOT (slottextFontFace ()));
 
-  text8 = new QAction (tr ("&8"), tr ("&8"), 0, this);
+  text8 = q3NewAction (tr ("&8"), tr ("&8"), 0, this);
   text8->setStatusTip (tr ("Changes text to 8 point font size"));
   text8->setWhatsThis (tr ("&8\n\nChanges text to 8 point font size"));
-  connect (text8, SIGNAL (activated ()), this, SLOT (slottext8 ()));
+  connect (text8, SIGNAL (triggered ()), this, SLOT (slottext8 ()));
 
-  text9 = new QAction (tr ("&9"), tr ("&9"), 0, this);
+  text9 = q3NewAction (tr ("&9"), tr ("&9"), 0, this);
   text9->setStatusTip (tr ("Changes text to 9 point font size"));
   text9->setWhatsThis (tr ("&9\n\nChanges text to 9 point font size"));
-  connect (text9, SIGNAL (activated ()), this, SLOT (slottext9 ()));
+  connect (text9, SIGNAL (triggered ()), this, SLOT (slottext9 ()));
 
-  text10 = new QAction (tr ("1&0"), tr ("1&0"), 0, this);
+  text10 = q3NewAction (tr ("1&0"), tr ("1&0"), 0, this);
   text10->setStatusTip (tr ("Changes text to 10 point font size"));
   text10->setWhatsThis (tr ("1&0\n\nChanges text to 10 point font size"));
-  connect (text10, SIGNAL (activated ()), this, SLOT (slottext10 ()));
+  connect (text10, SIGNAL (triggered ()), this, SLOT (slottext10 ()));
 
-  text11 = new QAction (tr ("1&1"), tr ("1&1"), 0, this);
+  text11 = q3NewAction (tr ("1&1"), tr ("1&1"), 0, this);
   text11->setStatusTip (tr ("Changes text to 11 point font size"));
   text11->setWhatsThis (tr ("1&1\n\nChanges text to 11 point font size"));
-  connect (text11, SIGNAL (activated ()), this, SLOT (slottext11 ()));
+  connect (text11, SIGNAL (triggered ()), this, SLOT (slottext11 ()));
 
-  text12 = new QAction (tr ("1&2"), tr ("1&2"), 0, this);
+  text12 = q3NewAction (tr ("1&2"), tr ("1&2"), 0, this);
   text12->setStatusTip (tr ("Changes text to 12 point font size"));
   text12->setWhatsThis (tr ("1&2\n\nChanges text to 12 point font size"));
-  connect (text12, SIGNAL (activated ()), this, SLOT (slottext12 ()));
+  connect (text12, SIGNAL (triggered ()), this, SLOT (slottext12 ()));
 
-  text14 = new QAction (tr ("1&4"), tr ("1&4"), 0, this);
+  text14 = q3NewAction (tr ("1&4"), tr ("1&4"), 0, this);
   text14->setStatusTip (tr ("Changes text to 14 point font size"));
   text14->setWhatsThis (tr ("1&4\n\nChanges text to 14 point font size"));
-  connect (text14, SIGNAL (activated ()), this, SLOT (slottext14 ()));
+  connect (text14, SIGNAL (triggered ()), this, SLOT (slottext14 ()));
 
-  text18 = new QAction (tr ("1&8"), tr ("1&8"), 0, this);
+  text18 = q3NewAction (tr ("1&8"), tr ("1&8"), 0, this);
   text18->setStatusTip (tr ("Changes text to 18 point font size"));
   text18->setWhatsThis (tr ("1&8\n\nChanges text to 18 point font size"));
-  connect (text18, SIGNAL (activated ()), this, SLOT (slottext18 ()));
+  connect (text18, SIGNAL (triggered ()), this, SLOT (slottext18 ()));
 
-  text24 = new QAction (tr ("2&4"), tr ("2&4"), 0, this);
+  text24 = q3NewAction (tr ("2&4"), tr ("2&4"), 0, this);
   text24->setStatusTip (tr ("Changes text to 24 point font size"));
   text24->setWhatsThis (tr ("2&4\n\nChanges text to 24 point font size"));
-  connect (text24, SIGNAL (activated ()), this, SLOT (slottext24 ()));
+  connect (text24, SIGNAL (triggered ()), this, SLOT (slottext24 ()));
 
-  text36 = new QAction (tr ("&36"), tr ("&36"), 0, this);
+  text36 = q3NewAction (tr ("&36"), tr ("&36"), 0, this);
   text36->setStatusTip (tr ("Changes text to 36 point font size"));
   text36->setWhatsThis (tr ("&36\n\nChanges text to 36 point font size"));
-  connect (text36, SIGNAL (activated ()), this, SLOT (slottext36 ()));
+  connect (text36, SIGNAL (triggered ()), this, SLOT (slottext36 ()));
 
-  text48 = new QAction (tr ("&48"), tr ("&48"), 0, this);
+  text48 = q3NewAction (tr ("&48"), tr ("&48"), 0, this);
   text48->setStatusTip (tr ("Changes text to 48 point font size"));
   text48->setWhatsThis (tr ("&48\n\nChanges text to 48 point font size"));
-  connect (text48, SIGNAL (activated ()), this, SLOT (slottext48 ()));
+  connect (text48, SIGNAL (triggered ()), this, SLOT (slottext48 ()));
 
-  text72 = new QAction (tr ("&72"), tr ("&72"), 0, this);
+  text72 = q3NewAction (tr ("&72"), tr ("&72"), 0, this);
   text72->setStatusTip (tr ("Changes text to 72 point font size"));
   text72->setWhatsThis (tr ("&72\n\nChanges text to 72 point font size"));
-  connect (text72, SIGNAL (activated ()), this, SLOT (slottext72 ()));
+  connect (text72, SIGNAL (triggered ()), this, SLOT (slottext72 ()));
 
-  text96 = new QAction (tr ("&96"), tr ("&96"), 0, this);
+  text96 = q3NewAction (tr ("&96"), tr ("&96"), 0, this);
   text96->setStatusTip (tr ("Changes text to 96 point font size"));
   text96->setWhatsThis (tr ("&96\n\nChanges text to 96 point font size"));
-  connect (text96, SIGNAL (activated ()), this, SLOT (slottext96 ()));
+  connect (text96, SIGNAL (triggered ()), this, SLOT (slottext96 ()));
 
-  text120 = new QAction (tr ("&120"), tr ("&120"), 0, this);
+  text120 = q3NewAction (tr ("&120"), tr ("&120"), 0, this);
   text120->setStatusTip (tr ("Changes text to 120 point font size"));
   text120->setWhatsThis (tr ("&120\n\nChanges text to 120 point font size"));
-  connect (text120, SIGNAL (activated ()), this, SLOT (slottext120 ()));
+  connect (text120, SIGNAL (triggered ()), this, SLOT (slottext120 ()));
 
-  textPlain =new QAction (tr ("&Plain"), tr ("&Plain"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_P), this);
+  textPlain =q3NewAction (tr ("&Plain"), tr ("&Plain"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_P), this);
   textPlain->setStatusTip (tr ("Make text plain"));
   textPlain->setWhatsThis (tr ("&Plain\n\nMake text plain"));
-  connect (textPlain, SIGNAL (activated ()), this, SLOT (slottextPlain ()));
+  connect (textPlain, SIGNAL (triggered ()), this, SLOT (slottextPlain ()));
 
-  textBold =new QAction (tr ("&Bold"), tr ("&Bold"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_B), this);
+  textBold =q3NewAction (tr ("&Bold"), tr ("&Bold"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_B), this);
   textBold->setStatusTip (tr ("Make text bold"));
   textBold->setWhatsThis (tr ("&Bold\n\nMake text bold"));
-  connect (textBold, SIGNAL (activated ()), this, SLOT (slottextBold ()));
+  connect (textBold, SIGNAL (triggered ()), this, SLOT (slottextBold ()));
 
-  textItalic = new QAction (tr ("&Italic"), tr ("&Italic"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_I), this);
+  textItalic = q3NewAction (tr ("&Italic"), tr ("&Italic"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_I), this);
   textItalic->setStatusTip (tr ("Make text italic"));
   textItalic->setWhatsThis (tr ("&Italic\n\nMake text italic"));
-  connect (textItalic, SIGNAL (activated ()), this,SLOT (slottextItalic ()));
+  connect (textItalic, SIGNAL (triggered ()), this,SLOT (slottextItalic ()));
 
-  textSubscript =new QAction (tr ("&Subscript"), tr ("&Subscript"), 0, this);
+  textSubscript =q3NewAction (tr ("&Subscript"), tr ("&Subscript"), 0, this);
   textSubscript->setStatusTip (tr ("Make text subscript"));
   textSubscript->setWhatsThis (tr ("&Subscript\n\nMake text subscript"));
-  connect (textSubscript, SIGNAL (activated ()), this,SLOT (slottextSubscript ()));
+  connect (textSubscript, SIGNAL (triggered ()), this,SLOT (slottextSubscript ()));
 
-  textSuperscript =new QAction (tr ("S&uperscript"), tr ("S&uperscript"), 0, this);
+  textSuperscript =q3NewAction (tr ("S&uperscript"), tr ("S&uperscript"), 0, this);
   textSuperscript->setStatusTip (tr ("Make text superscript"));
   textSuperscript->setWhatsThis (tr ("S&uperscript\n\nMake text superscript"));
-  connect (textSuperscript, SIGNAL (activated ()), this,SLOT (slottextSuperscript ()));
+  connect (textSuperscript, SIGNAL (triggered ()), this,SLOT (slottextSuperscript ()));
 
-  textAlignLeft =new QAction (tr ("Align &Left"), tr ("Align &Left"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_L), this);
+  textAlignLeft =q3NewAction (tr ("Align &Left"), tr ("Align &Left"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_L), this);
   textAlignLeft->setStatusTip (tr ("Make text flush left"));
   textAlignLeft->setWhatsThis (tr ("Align &Left\n\nMake text flush left"));
-  connect (textAlignLeft, SIGNAL (activated ()), this,SLOT (slottextAlignLeft ()));
+  connect (textAlignLeft, SIGNAL (triggered ()), this,SLOT (slottextAlignLeft ()));
 
-  textAlignCenter =new QAction (tr ("Align &Center"), tr ("Align &Center"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_C), this);
+  textAlignCenter =q3NewAction (tr ("Align &Center"), tr ("Align &Center"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_C), this);
   textAlignCenter->setStatusTip (tr ("Make text aligned center"));
   textAlignCenter->setWhatsThis (tr ("Align &Center\n\nMake text aligned center"));
-  connect (textAlignCenter, SIGNAL (activated ()), this,SLOT (slottextAlignCenter ()));
+  connect (textAlignCenter, SIGNAL (triggered ()), this,SLOT (slottextAlignCenter ()));
 
-  textAlignRight = new QAction (tr ("Align &Right"), tr ("Align &Right"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_R), this);
+  textAlignRight = q3NewAction (tr ("Align &Right"), tr ("Align &Right"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_R), this);
   textAlignRight->setStatusTip (tr ("Make text flush right"));
   textAlignRight->setWhatsThis (tr ("Align &Right\n\nMake text flush right"));
-  connect (textAlignRight, SIGNAL (activated ()), this,SLOT (slottextAlignRight ()));
+  connect (textAlignRight, SIGNAL (triggered ()), this,SLOT (slottextAlignRight ()));
 
-  textJustify = new QAction (tr ("&Justify"), tr ("&Justify"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_J), this);
+  textJustify = q3NewAction (tr ("&Justify"), tr ("&Justify"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_J), this);
   textJustify->setStatusTip (tr ("Make text align flush with left and right edges"));
   textJustify->setWhatsThis (tr("&Justify\n\nMake text align flush with left and right edges"));
-  connect (textJustify, SIGNAL (activated ()), this,SLOT (slottextJustify ()));
+  connect (textJustify, SIGNAL (triggered ()), this,SLOT (slottextJustify ()));
 
-  textIncrease =new QAction (tr ("&Increase"), tr ("&Increase"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Right), this);
+  textIncrease =q3NewAction (tr ("&Increase"), tr ("&Increase"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Right), this);
   textIncrease->setStatusTip (tr ("Increase the space between letters"));
   textIncrease->setWhatsThis (tr ("&Increase\n\nIncrease the space between letters"));
-  connect (textIncrease, SIGNAL (activated ()), this,SLOT (slottextIncrease ()));
+  connect (textIncrease, SIGNAL (triggered ()), this,SLOT (slottextIncrease ()));
 
-  textDecrease =new QAction (tr ("&Decrease"), tr ("&Decrease"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Left), this);
+  textDecrease =q3NewAction (tr ("&Decrease"), tr ("&Decrease"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Left), this);
   textDecrease->setStatusTip (tr ("Reduce the space between letters"));
   textDecrease->setWhatsThis (tr ("&Decrease\n\nReduce the space between letters"));
-  connect (textDecrease, SIGNAL (activated ()), this,SLOT (slottextDecrease ()));
+  connect (textDecrease, SIGNAL (triggered ()), this,SLOT (slottextDecrease ()));
 
-  textReset =new QAction (tr ("&Reset"), tr ("&Reset"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Up), this);
+  textReset =q3NewAction (tr ("&Reset"), tr ("&Reset"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Up), this);
   textReset->setStatusTip (tr ("Reset the space between letters to the default"));
   textReset->setWhatsThis (tr("&Reset\n\nReset the space between letters to the default"));
-  connect (textReset, SIGNAL (activated ()), this, SLOT (slottextReset ()));
+  connect (textReset, SIGNAL (triggered ()), this, SLOT (slottextReset ()));
 
-  textScrollable =new QAction (tr ("Scrollable"), tr ("Scrollable"), 0, this);
+  textScrollable =q3NewAction (tr ("Scrollable"), tr ("Scrollable"), 0, this);
   textScrollable->setStatusTip (tr ("Toggle Text Field Scrollable Mode"));
   textScrollable->setWhatsThis (tr ("Scrollable\n\nToggle Text Field Scrollable Mode"));
-  connect (textScrollable, SIGNAL (activated ()), this,SLOT (slottextScrollable ()));
+  connect (textScrollable, SIGNAL (triggered ()), this,SLOT (slottextScrollable ()));
 
-  controlPlay =new QAction (tr ("&Play"), tr ("&Play"), QKeySequence (Qt::Key_Return),this);
+  controlPlay =q3NewAction (tr ("&Play"), tr ("&Play"), QKeySequence (Qt::Key_Return),this);
   controlPlay->setStatusTip (tr ("Start playing (or stop) the animation\nPlay"));
   controlPlay->setWhatsThis (tr("&Play\n\nStart playing (or stop) the animation\nPlay"));
-  connect (controlPlay, SIGNAL (activated ()), this,SLOT (slotcontrolPlay ()));
+  connect (controlPlay, SIGNAL (triggered ()), this,SLOT (slotcontrolPlay ()));
 
-  controlRewind =new QAction (tr ("&Rewind"), tr ("&Rewind"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_R), this);
+  controlRewind =q3NewAction (tr ("&Rewind"), tr ("&Rewind"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_R), this);
   controlRewind->setStatusTip (tr ("Rewind to beginning\nRewind"));
   controlRewind->setWhatsThis (tr ("&Rewind\n\nRewind to beginning\nRewind"));
-  connect (controlRewind, SIGNAL (activated ()), this,SLOT (slotcontrolRewind ()));
+  connect (controlRewind, SIGNAL (triggered ()), this,SLOT (slotcontrolRewind ()));
 
-  controlGoToEnd =new QAction (tr ("&Go To End"), tr ("&Go To End"), 0, this);
+  controlGoToEnd =q3NewAction (tr ("&Go To End"), tr ("&Go To End"), 0, this);
   controlGoToEnd->setStatusTip (tr ("Fast forward to end\nGo To End"));
   controlGoToEnd->setWhatsThis (tr ("&Go To End\n\nFast forward to end\nGo To End"));
-  connect (controlGoToEnd, SIGNAL (activated ()), this,SLOT (slotcontrolGoToEnd ()));
+  connect (controlGoToEnd, SIGNAL (triggered ()), this,SLOT (slotcontrolGoToEnd ()));
 
-  controlStepForward =new QAction (tr ("Step &Forward"), tr ("Step &Forward"),QAccel::stringToKey ("Ctrl+>"), this);
+  controlStepForward =q3NewAction (tr ("Step &Forward"), tr ("Step &Forward"),QKeySequence ("Ctrl+>"), this);
   controlStepForward->setStatusTip (tr("Step forward one frame\nStep Forward [>]"));
   controlStepForward->setWhatsThis (tr("Step &Forward\n\nStep forward one frame\nStep Forward [>]"));
-  connect (controlStepForward, SIGNAL (activated ()), this, SLOT (slotcontrolStepForward ()));
+  connect (controlStepForward, SIGNAL (triggered ()), this, SLOT (slotcontrolStepForward ()));
 
-  controlStepBackward =new QAction (tr ("Step &Backward"), tr ("Step &Backward"),QAccel::stringToKey ("Ctrl+<"), this);
+  controlStepBackward =q3NewAction (tr ("Step &Backward"), tr ("Step &Backward"),QKeySequence ("Ctrl+<"), this);
   controlStepBackward->setStatusTip (tr ("Step back one frame\nStep Back [<]"));
   controlStepBackward->setWhatsThis (tr("Step &Backward\n\nStep back one frame\nStep Back [<]"));
-  connect (controlStepBackward, SIGNAL (activated ()), this,SLOT (slotcontrolStepBackward ()));
+  connect (controlStepBackward, SIGNAL (triggered ()), this,SLOT (slotcontrolStepBackward ()));
 
-  controlTestMovie =new QAction (tr ("Test &Movie"), tr ("Test &Movie"),QKeySequence (Qt::CTRL + Qt::Key_Return), this);
+  controlTestMovie =q3NewAction (tr ("Test &Movie"), tr ("Test &Movie"),QKeySequence (Qt::CTRL + Qt::Key_Return), this);
   controlTestMovie->setStatusTip (tr ("Run the movie in test mode"));
   controlTestMovie->setWhatsThis (tr ("Test &Movie\n\nRun the movie in test mode"));
-  connect (controlTestMovie, SIGNAL (activated ()), this,SLOT (slotcontrolTestMovie ()));
+  connect (controlTestMovie, SIGNAL (triggered ()), this,SLOT (slotcontrolTestMovie ()));
 
-  controlDebugMovie =new QAction (tr ("&Debug Movie"), tr ("&Debug Movie"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Return), this);
+  controlDebugMovie =q3NewAction (tr ("&Debug Movie"), tr ("&Debug Movie"),QKeySequence (Qt::CTRL + Qt::SHIFT + Qt::Key_Return), this);
   controlDebugMovie->setStatusTip (tr ("Run the movie in test mode and open the debugger"));
   controlDebugMovie->setWhatsThis (tr("&Debug Movie\n\nRun the movie in test mode and open the debugger"));
-  connect (controlDebugMovie, SIGNAL (activated ()), this,SLOT (slotcontrolDebugMovie ()));
+  connect (controlDebugMovie, SIGNAL (triggered ()), this,SLOT (slotcontrolDebugMovie ()));
 
-  controlTestScene =new QAction (tr ("Test &Scene"), tr ("Test &Scene"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Return), this);
+  controlTestScene =q3NewAction (tr ("Test &Scene"), tr ("Test &Scene"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_Return), this);
   controlTestScene->setStatusTip (tr ("Run the current scene in test mode"));
   controlTestScene->setWhatsThis (tr ("Test &Scene\n\nRun the current scene in test mode"));
-  connect (controlTestScene, SIGNAL (activated ()), this,SLOT (slotcontrolTestScene ()));
+  connect (controlTestScene, SIGNAL (triggered ()), this,SLOT (slotcontrolTestScene ()));
 
-  controlLoopPlayback =new QAction (tr ("&Loop Playback"), tr ("&Loop Playback"), 0, this);
+  controlLoopPlayback =q3NewAction (tr ("&Loop Playback"), tr ("&Loop Playback"), 0, this);
   controlLoopPlayback->setStatusTip (tr ("Play the animation in a continuous loop"));
   controlLoopPlayback->setWhatsThis (tr("&Loop Playback\n\nPlay the animation in a continuous loop"));
-  connect (controlLoopPlayback, SIGNAL (activated ()), this,SLOT (slotcontrolLoopPlayback ()));
+  connect (controlLoopPlayback, SIGNAL (triggered ()), this,SLOT (slotcontrolLoopPlayback ()));
 
-  controlPlayAllScenes =new QAction (tr ("Play &All Scenes"), tr ("Play &All Scenes"), 0, this);
+  controlPlayAllScenes =q3NewAction (tr ("Play &All Scenes"), tr ("Play &All Scenes"), 0, this);
   controlPlayAllScenes->setStatusTip (tr ("Play all movie scenes as a continous animation"));
   controlPlayAllScenes->setWhatsThis (tr("Play &All Scenes\n\nPlay all movie scenes as a continous animation"));
-  connect (controlPlayAllScenes, SIGNAL (activated ()), this,SLOT (slotcontrolPlayAllScenes ()));
+  connect (controlPlayAllScenes, SIGNAL (triggered ()), this,SLOT (slotcontrolPlayAllScenes ()));
 
-  controlEnableSimpleFrameActions =new QAction (tr ("Enable Simple Frame Act&ions"),tr ("Enable Simple Frame Act&ions"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_A), this);
+  controlEnableSimpleFrameActions =q3NewAction (tr ("Enable Simple Frame Act&ions"),tr ("Enable Simple Frame Act&ions"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_A), this);
   controlEnableSimpleFrameActions->setStatusTip (tr("Perform some frame actions when playing the animation"));
   controlEnableSimpleFrameActions->setWhatsThis (tr("Enable Simple Frame Act&ions\n\nPerform some frame actions when playing the animation"));
-  connect (controlEnableSimpleFrameActions, SIGNAL (activated ()), this,SLOT (slotcontrolEnableSimpleFrameActions ()));
+  connect (controlEnableSimpleFrameActions, SIGNAL (triggered ()), this,SLOT (slotcontrolEnableSimpleFrameActions ()));
 
-  controlEnableSimpleButtons =new QAction (tr ("Enable Simple Bu&ttons"), tr ("Enable Simple Bu&ttons"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_B), this);
+  controlEnableSimpleButtons =q3NewAction (tr ("Enable Simple Bu&ttons"), tr ("Enable Simple Bu&ttons"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_B), this);
   controlEnableSimpleButtons->setStatusTip (tr ("Test the action of buttons in the movie"));
   controlEnableSimpleButtons->setWhatsThis (tr("Enable Simple Bu&ttons\n\nTest the action of buttons in the movie"));
-  connect (controlEnableSimpleButtons, SIGNAL (activated ()), this,SLOT (slotcontrolEnableSimpleButtons ()));
+  connect (controlEnableSimpleButtons, SIGNAL (triggered ()), this,SLOT (slotcontrolEnableSimpleButtons ()));
 
-  controlMuteSounds =new QAction (tr ("Mute Sou&nds"), tr ("Mute Sou&nds"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_M), this);
+  controlMuteSounds =q3NewAction (tr ("Mute Sou&nds"), tr ("Mute Sou&nds"),QKeySequence (Qt::CTRL + Qt::ALT + Qt::Key_M), this);
   controlMuteSounds->setStatusTip (tr ("Mute the playing of sounds with the animation\n"));
   controlMuteSounds->setWhatsThis (tr("Mute Sou&nds\n\nMute the playing of sounds with the animation\n"));
-  connect (controlMuteSounds, SIGNAL (activated ()), this,SLOT (slotcontrolMuteSounds ()));
+  connect (controlMuteSounds, SIGNAL (triggered ()), this,SLOT (slotcontrolMuteSounds ()));
 
-  controlEnableLivePreview =new QAction (tr ("Enable Live Preview"), tr ("Enable Live Preview"), 0,this);
+  controlEnableLivePreview =q3NewAction (tr ("Enable Live Preview"), tr ("Enable Live Preview"), 0,this);
   controlEnableLivePreview->setStatusTip (tr ("Enable Live Preview of Components"));
   controlEnableLivePreview->setWhatsThis (tr("Enable Live Preview\n\nEnable Live Preview of Components"));
-  connect (controlEnableLivePreview, SIGNAL (activated ()), this, SLOT (slotcontrolEnableLivePreview ()));
+  connect (controlEnableLivePreview, SIGNAL (triggered ()), this, SLOT (slotcontrolEnableLivePreview ()));
 
   /*windowMain = new QAction(tr( "&Main"),tr( "&Main"),0,this);
      windowMain->setStatusTip(tr("Show or hide the main toolbar"));
@@ -1014,186 +1014,187 @@ void F4lmApp::initActions ()
      windowStatus->setWhatsThis(tr("&Status\n\nShow or hide the status bar"));
      connect(windowStatus,SIGNAL(activated()), this, SLOT(slotwindowStatus())); */
 
-  windowController =new QAction (tr ("C&ontroller"), tr ("C&ontroller"), 0, this);
+  windowController =q3NewAction (tr ("C&ontroller"), tr ("C&ontroller"), 0, this);
   windowController->setStatusTip (tr ("Show or hide the movie playback controller"));
   windowController->setWhatsThis (tr("C&ontroller\n\nShow or hide the movie playback controller"));
-  connect (windowController, SIGNAL (activated ()), this,SLOT (slotwindowController ()));
+  connect (windowController, SIGNAL (triggered ()), this,SLOT (slotwindowController ()));
 
-  windowAnswers = new QAction (tr ("Answers"), tr ("Answers"), 0, this);
+  windowAnswers = q3NewAction (tr ("Answers"), tr ("Answers"), 0, this);
   windowAnswers->setStatusTip (tr("Get answers to technical questions directly from Macromedia on-line"));
   windowAnswers->setWhatsThis (tr("Answers\n\nGet answers to technical questions directly from Macromedia on-line"));
-  connect (windowAnswers, SIGNAL (activated ()), this,SLOT (slotwindowAnswers ()));
+  connect (windowAnswers, SIGNAL (triggered ()), this,SLOT (slotwindowAnswers ()));
 
-  windowAlign =new QAction (tr ("Ali&gn"), tr ("Ali&gn"),QKeySequence (Qt::CTRL + Qt::Key_K), this);
+  windowAlign =q3NewAction (tr ("Ali&gn"), tr ("Ali&gn"),QKeySequence (Qt::CTRL + Qt::Key_K), this);
   windowAlign->setStatusTip (tr ("Align selected objects to each other or the stage"));
   windowAlign->setWhatsThis (tr("Ali&gn\n\nAlign selected objects to each other or the stage"));
-  connect (windowAlign, SIGNAL (activated ()), this,SLOT (slotwindowAlign ()));
+  connect (windowAlign, SIGNAL (triggered ()), this,SLOT (slotwindowAlign ()));
 
-  windowColorMixer =new QAction (tr ("Color Mi&xer"), tr ("Color Mi&xer"), QKeySequence (Qt::SHIFT + Qt::Key_F2), this);
+  windowColorMixer =q3NewAction (tr ("Color Mi&xer"), tr ("Color Mi&xer"), QKeySequence (Qt::SHIFT + Qt::Key_F2), this);
   windowColorMixer->setStatusTip (tr("Change the current color using RGB  HSB or HEX values"));
   windowColorMixer->setWhatsThis (tr("Color Mi&xer\n\nChange the current color using RGB  HSB or HEX values"));
-  connect (windowColorMixer, SIGNAL (activated ()), this,SLOT (slotwindowColorMixer ()));
+  connect (windowColorMixer, SIGNAL (triggered ()), this,SLOT (slotwindowColorMixer ()));
 
-  windowColorSwatches =new QAction (tr ("Color S&watches"), tr ("Color S&watches"),QKeySequence (Qt::SHIFT + Qt::Key_F3), this);
+  windowColorSwatches =q3NewAction (tr ("Color S&watches"), tr ("Color S&watches"),QKeySequence (Qt::SHIFT + Qt::Key_F3), this);
   windowColorSwatches->setStatusTip (tr ("Select colors from swatches and manage swatches"));
   windowColorSwatches->setWhatsThis (tr("Color S&watches\n\nSelect colors from swatches and manage swatches"));
-  connect (windowColorSwatches, SIGNAL (activated ()), this,SLOT (slotwindowColorSwatches ()));
+  connect (windowColorSwatches, SIGNAL (triggered ()), this,SLOT (slotwindowColorSwatches ()));
 
-  windowInfo =new QAction (tr ("&Info"), tr ("&Info"),QKeySequence (Qt::CTRL + Qt::Key_I), this);
+  windowInfo =q3NewAction (tr ("&Info"), tr ("&Info"),QKeySequence (Qt::CTRL + Qt::Key_I), this);
   windowInfo->setStatusTip (tr("Show or change the properties and position of the selected object"));
   windowInfo->setWhatsThis (tr("&Info\n\nShow or change the properties and position of the selected object"));
-  connect (windowInfo, SIGNAL (activated ()), this,SLOT (slotwindowInfo ()));
+  connect (windowInfo, SIGNAL (triggered ()), this,SLOT (slotwindowInfo ()));
 
-  windowScene = new QAction (tr ("Sc&ene"), tr ("Sc&ene"),QKeySequence (Qt::CTRL + Qt::Key_U), this);
+  windowScene = q3NewAction (tr ("Sc&ene"), tr ("Sc&ene"),QKeySequence (Qt::CTRL + Qt::Key_U), this);
   windowScene->setStatusTip (tr("Show or change a list of the scenes in the current movie"));
   windowScene->setWhatsThis (tr("Sc&ene\n\nShow or change a list of the scenes in the current movie"));
-  connect (windowScene, SIGNAL (activated ()), this,SLOT (slotwindowScene ()));
+  connect (windowScene, SIGNAL (triggered ()), this,SLOT (slotwindowScene ()));
 
-  windowTransform =new QAction (tr ("&Transform"), tr ("&Transform"),QKeySequence (Qt::CTRL + Qt::Key_T), this);
+  windowTransform =q3NewAction (tr ("&Transform"), tr ("&Transform"),QKeySequence (Qt::CTRL + Qt::Key_T), this);
   windowTransform->setStatusTip (tr("Scale and/or rotate the selection using numeric values"));
   windowTransform->setWhatsThis (tr("&Transform\n\nScale and/or rotate the selection using numeric values"));
-  connect (windowTransform, SIGNAL (activated ()), this,SLOT (slotwindowTransform ()));
+  connect (windowTransform, SIGNAL (triggered ()), this,SLOT (slotwindowTransform ()));
 
-  windowActions =new QAction (tr ("&Actions"), tr ("&Actions"), QKeySequence (Qt::Key_F2), this);
+  windowActions =q3NewAction (tr ("&Actions"), tr ("&Actions"), QKeySequence (Qt::Key_F2), this);
   windowActions->setStatusTip (tr ("Show or hide the Actions panel"));
   windowActions->setWhatsThis (tr ("&Actions\n\nShow or hide the Actions panel"));
-  connect (windowActions, SIGNAL (activated ()), this,SLOT (slotwindowActions ()));
+  connect (windowActions, SIGNAL (triggered ()), this,SLOT (slotwindowActions ()));
 
-  windowDebugger = new QAction (tr ("&Debugger"), tr ("&Debugger"),QKeySequence (Qt::SHIFT + Qt::Key_F4), this);
+  windowDebugger = q3NewAction (tr ("&Debugger"), tr ("&Debugger"),QKeySequence (Qt::SHIFT + Qt::Key_F4), this);
   windowDebugger->setStatusTip (tr ("Show or hide the Debugger"));
   windowDebugger->setWhatsThis (tr ("&Debugger\n\nShow or hide the Debugger"));
-  connect (windowDebugger, SIGNAL (activated ()), this,SLOT (slotwindowDebugger ()));
+  connect (windowDebugger, SIGNAL (triggered ()), this,SLOT (slotwindowDebugger ()));
 
-  windowMovieExplorer =new QAction (tr ("&Movie Explorer"), tr ("&Movie Explorer"),QKeySequence (Qt::Key_F4), this);
+  windowMovieExplorer =q3NewAction (tr ("&Movie Explorer"), tr ("&Movie Explorer"),QKeySequence (Qt::Key_F4), this);
   windowMovieExplorer->setStatusTip (tr ("Show or hide the Movie Explorer"));
   windowMovieExplorer->setWhatsThis (tr ("&Movie Explorer\n\nShow or hide the Movie Explorer"));
-  connect (windowMovieExplorer, SIGNAL (activated ()), this,SLOT (slotwindowMovieExplorer ()));
+  connect (windowMovieExplorer, SIGNAL (triggered ()), this,SLOT (slotwindowMovieExplorer ()));
 
-  windowReference =new QAction (tr ("Re&ference"), tr ("Re&ference"),QKeySequence (Qt::SHIFT + Qt::Key_F1), this);
+  windowReference =q3NewAction (tr ("Re&ference"), tr ("Re&ference"),QKeySequence (Qt::SHIFT + Qt::Key_F1), this);
   windowReference->setStatusTip (tr ("Show or hide the Reference panel"));
   windowReference->setWhatsThis (tr ("Re&ference\n\nShow or hide the Reference panel"));
-  connect (windowReference, SIGNAL (activated ()), this,SLOT (slotwindowReference ()));
+  connect (windowReference, SIGNAL (triggered ()), this,SLOT (slotwindowReference ()));
 
-  windowOutput =new QAction (tr ("O&utput"), tr ("O&utput"),QKeySequence (Qt::SHIFT + Qt::Key_F9), this);
+  windowOutput =q3NewAction (tr ("O&utput"), tr ("O&utput"),QKeySequence (Qt::SHIFT + Qt::Key_F9), this);
   windowOutput->setStatusTip (tr ("Display output information when testing a movie"));
   windowOutput->setWhatsThis (tr("O&utput\n\nDisplay output information when testing a movie"));
-  connect (windowOutput, SIGNAL (activated ()), this,SLOT (slotwindowOutput ()));
+  connect (windowOutput, SIGNAL (triggered ()), this,SLOT (slotwindowOutput ()));
 
-  windowAccessibility =new QAction (tr ("Acce&ssibility"), tr ("Acce&ssibility"),QKeySequence (Qt::Key_F9), this);
+  windowAccessibility =q3NewAction (tr ("Acce&ssibility"), tr ("Acce&ssibility"),QKeySequence (Qt::Key_F9), this);
   windowAccessibility->setStatusTip (tr("Apply accessibility information to selected objects on the stage"));
   windowAccessibility->setWhatsThis (tr("Acce&ssibility\n\nApply accessibility information to selected objects on the stage"));
-  connect (windowAccessibility, SIGNAL (activated ()), this,SLOT (slotwindowAccessibility ()));
+  connect (windowAccessibility, SIGNAL (triggered ()), this,SLOT (slotwindowAccessibility ()));
 
-  windowComponents =new QAction (tr ("&Components"), tr ("&Components"),QKeySequence (Qt::Key_F11), this);
+  windowComponents =q3NewAction (tr ("&Components"), tr ("&Components"),QKeySequence (Qt::Key_F11), this);
   windowComponents->setStatusTip (tr ("Macromedia Component Widgets"));
   windowComponents->setWhatsThis (tr ("&Components\n\nMacromedia Component Widgets"));
-  connect (windowComponents, SIGNAL (activated ()), this,SLOT (slotwindowComponents ()));
+  connect (windowComponents, SIGNAL (triggered ()), this,SLOT (slotwindowComponents ()));
 
-  windowComponentParameters =new QAction (tr ("Component Paramete&rs"), tr ("Component Paramete&rs"),QKeySequence (Qt::SHIFT + Qt::Key_F11), this);
+  windowComponentParameters =q3NewAction (tr ("Component Paramete&rs"), tr ("Component Paramete&rs"),QKeySequence (Qt::SHIFT + Qt::Key_F11), this);
   windowComponentParameters->setStatusTip (tr("Show or change the parameters associated with the selected movie clip"));
   windowComponentParameters->setWhatsThis (tr("Component Paramete&rs\n\nShow or change the parameters associated with the selected movie clip"));
-  connect (windowComponentParameters, SIGNAL (activated ()), this,SLOT (slotwindowComponentParameters ()));
+  connect (windowComponentParameters, SIGNAL (triggered ()), this,SLOT (slotwindowComponentParameters ()));
 
-  windowLibrary =new QAction (tr ("&Library"), tr ("&Library"),QKeySequence (Qt::CTRL + Qt::Key_L), this);
+  windowLibrary =q3NewAction (tr ("&Library"), tr ("&Library"),QKeySequence (Qt::CTRL + Qt::Key_L), this);
   windowLibrary->setStatusTip (tr ("Show the floating library window for this document"));
   windowLibrary->setWhatsThis (tr("&Library\n\nShow the floating library window for this document"));
-  connect (windowLibrary, SIGNAL (activated ()), this,SLOT (slotwindowLibrary ()));
+  connect (windowLibrary, SIGNAL (triggered ()), this,SLOT (slotwindowLibrary ()));
 
-  windowlibraries = new QAction (tr ("libraries"), tr ("libraries"), 0, this);
+  windowlibraries = q3NewAction (tr ("libraries"), tr ("libraries"), 0, this);
   windowlibraries->setStatusTip (tr ("Open a library window"));
   windowlibraries->setWhatsThis (tr ("libraries\n\nOpen a library window"));
-  connect (windowlibraries, SIGNAL (activated ()), this,SLOT (slotwindowlibraries ()));
+  connect (windowlibraries, SIGNAL (triggered ()), this,SLOT (slotwindowlibraries ()));
 
-  windowPanelSets = new QAction (tr ("Panel Sets"), tr ("Panel Sets"), 0, this);
+  windowPanelSets = q3NewAction (tr ("Panel Sets"), tr ("Panel Sets"), 0, this);
   windowPanelSets->setStatusTip (tr ("Open panel set"));
   windowPanelSets->setWhatsThis (tr ("Panel Sets\n\nOpen panel set"));
-  connect (windowPanelSets, SIGNAL (activated ()), this,SLOT (slotwindowPanelSets ()));
+  connect (windowPanelSets, SIGNAL (triggered ()), this,SLOT (slotwindowPanelSets ()));
 
-  windowSavePanelLayout =new QAction (tr ("Save Panel Layout..."), tr ("Save Panel Layout..."), 0,this);
+  windowSavePanelLayout =q3NewAction (tr ("Save Panel Layout..."), tr ("Save Panel Layout..."), 0,this);
   windowSavePanelLayout->setStatusTip (tr ("Saves the current panel layout settings"));
   windowSavePanelLayout->setWhatsThis (tr("Save Panel Layout...\n\nSaves the current panel layout settings"));
-  connect (windowSavePanelLayout, SIGNAL (activated ()), this,SLOT (slotwindowSavePanelLayout ()));
+  connect (windowSavePanelLayout, SIGNAL (triggered ()), this,SLOT (slotwindowSavePanelLayout ()));
 
-  windowCloseAllPanels =new QAction (tr ("Close All Panels"), tr ("Close All Panels"), 0, this);
+  windowCloseAllPanels =q3NewAction (tr ("Close All Panels"), tr ("Close All Panels"), 0, this);
   windowCloseAllPanels->setStatusTip (tr ("Closes all panels"));
   windowCloseAllPanels->setWhatsThis (tr ("Close All Panels\n\nCloses all panels"));
-  connect (windowCloseAllPanels, SIGNAL (activated ()), this,SLOT (slotwindowCloseAllPanels ()));
+  connect (windowCloseAllPanels, SIGNAL (triggered ()), this,SLOT (slotwindowCloseAllPanels ()));
 
-  windowNewWindow =new QAction (tr ("New Window"), tr ("&New Window"), 0, this);
+  windowNewWindow =q3NewAction (tr ("New Window"), tr ("&New Window"), 0, this);
   windowNewWindow->setStatusTip (tr ("Opens a new view for the current document"));
   windowNewWindow->setWhatsThis (tr("New Window\n\nOpens a new view for the current document"));
-  connect (windowNewWindow, SIGNAL (activated ()), this, SLOT (slotWindowNewWindow ()));
+  connect (windowNewWindow, SIGNAL (triggered ()), this, SLOT (slotWindowNewWindow ()));
 
-  windowCascade = new QAction (tr ("Cascade"), tr ("&Cascade"), 0, this);
+  windowCascade = q3NewAction (tr ("Cascade"), tr ("&Cascade"), 0, this);
   windowCascade->setStatusTip (tr ("Cascades all windows"));
   windowCascade->setWhatsThis (tr ("Cascade\n\nCascades all windows"));
-  connect (windowCascade, SIGNAL (activated ()), pWorkspace, SLOT (cascade ()));
+  connect (windowCascade, SIGNAL (triggered ()), pWorkspace, SLOT (cascade ()));
 
-  windowTile = new QAction (tr ("Tile"), tr ("&Tile"), 0, this);
+  windowTile = q3NewAction (tr ("Tile"), tr ("&Tile"), 0, this);
   windowTile->setStatusTip (tr ("Tiles all windows"));
   windowTile->setWhatsThis (tr ("Tile\n\nTiles all windows"));
-  connect (windowTile, SIGNAL (activated ()), pWorkspace, SLOT (tile ()));
+  connect (windowTile, SIGNAL (triggered ()), pWorkspace, SLOT (tile ()));
 
-  windowProperties =new QAction (tr ("Properties"), tr ("&Properties"),QAccel::stringToKey (tr ("Ctrl+F3")), this, 0, true);
+  windowProperties =q3NewAction (tr ("Properties"), tr ("&Properties"),QKeySequence (tr ("Ctrl+F3")), this, 0, true);
   windowProperties->setStatusTip (tr ("Show or hide the Property Inspector"));
   windowProperties->setWhatsThis (tr ("Properties\n\nShow or hide the Property Inspector"));
-  windowProperties->setOn (true);
-  connect (windowProperties, SIGNAL (activated ()), this,SLOT (slotWindowProperities ()));
+  windowProperties->setChecked (true);
+  connect (windowProperties, SIGNAL (triggered ()), this,SLOT (slotWindowProperities ()));
 
-  windowTimeLine =new QAction (tr ("Time Line"), tr ("Time Line"),QAccel::stringToKey (tr ("Ctrl+Alt+T")), this, 0, true);
+  windowTimeLine =q3NewAction (tr ("Time Line"), tr ("Time Line"),QKeySequence (tr ("Ctrl+Alt+T")), this, 0, true);
   windowTimeLine->setStatusTip (tr("Show or hide the animation timeline and layers controls"));
   windowTimeLine->setWhatsThis (tr("Time Line\n\nShow or hide the animation timeline and layers controls"));
-  windowTimeLine->setOn (true);
-  connect (windowTimeLine, SIGNAL (activated ()), this,SLOT (slotWindowTimeLine ()));
+  windowTimeLine->setChecked (true);
+  connect (windowTimeLine, SIGNAL (triggered ()), this,SLOT (slotWindowTimeLine ()));
 
-  windowTools = new QAction (tr ("Tools"), tr ("Tools"), 0, this, 0, true);
+  windowTools = q3NewAction (tr ("Tools"), tr ("Tools"), 0, this, 0, true);
   windowTools->setStatusTip (tr ("Show or hide the drawing toolbar"));
   windowTools->setWhatsThis (tr ("Tools\n\nShow or hide the drawing toolbar"));
-  windowTools->setOn (true);
-  connect (windowTools, SIGNAL (activated ()), this,SLOT (slotWindowTools ()));
+  windowTools->setChecked (true);
+  connect (windowTools, SIGNAL (triggered ()), this,SLOT (slotWindowTools ()));
 
-  windowAction = new QActionGroup (this, 0, false);
-  windowAction->insert (windowNewWindow);
-  windowAction->insert (windowCascade);
-  windowAction->insert (windowTile);
-  helpUsingF4l =new QAction (tr ("Using &F4L"), tr ("Using &F4L"), QKeySequence (Qt::Key_F1), this);
+  windowAction = new QActionGroup (this);
+  windowAction->setExclusive (false);
+  windowAction->addAction (windowNewWindow);
+  windowAction->addAction (windowCascade);
+  windowAction->addAction (windowTile);
+  helpUsingF4l =q3NewAction (tr ("Using &F4L"), tr ("Using &F4L"), QKeySequence (Qt::Key_F1), this);
   helpUsingF4l->setStatusTip (tr ("Display the help contents"));
   helpUsingF4l->setWhatsThis (tr ("Using &F4L\n\nDisplay the help contents"));
-  connect (helpUsingF4l, SIGNAL (activated ()), this,SLOT (slothelpUsingF4l ()));
+  connect (helpUsingF4l, SIGNAL (triggered ()), this,SLOT (slothelpUsingF4l ()));
 
-  helpActionScriptDictionary =new QAction (tr ("ActionScript &Dictionary"),tr ("ActionScript &Dictionary"), 0, this);
+  helpActionScriptDictionary =q3NewAction (tr ("ActionScript &Dictionary"),tr ("ActionScript &Dictionary"), 0, this);
   helpActionScriptDictionary->setStatusTip (tr ("Display the ActionScript Dictionary"));
   helpActionScriptDictionary->setWhatsThis (tr("ActionScript &Dictionary\n\nDisplay the ActionScript Dictionary"));
-  connect (helpActionScriptDictionary, SIGNAL (activated ()), this,SLOT (slothelpActionScriptDictionary ()));
+  connect (helpActionScriptDictionary, SIGNAL (triggered ()), this,SLOT (slothelpActionScriptDictionary ()));
 
-  helpF4lExchange =new QAction (tr ("F4L Exchange"), tr ("F4L Exchange"), 0, this);
+  helpF4lExchange =q3NewAction (tr ("F4L Exchange"), tr ("F4L Exchange"), 0, this);
   helpF4lExchange->setStatusTip (tr ("Go to the F4L Exhange web site."));
   helpF4lExchange->setWhatsThis (tr ("F4L Exchange\n\nGo to the F4L Exhange web site."));
-  connect (helpF4lExchange, SIGNAL (activated ()), this,SLOT (slothelpF4lExchange ()));
+  connect (helpF4lExchange, SIGNAL (triggered ()), this,SLOT (slothelpF4lExchange ()));
 
-  helpManageExtensions =new QAction (tr ("Manage Extensions..."), tr ("Manage Extensions..."), 0,this);
+  helpManageExtensions =q3NewAction (tr ("Manage Extensions..."), tr ("Manage Extensions..."), 0,this);
   helpManageExtensions->setStatusTip (tr ("Manage Extensions"));
   helpManageExtensions->setWhatsThis (tr ("Manage Extensions...\n\nManage Extensions"));
-  connect (helpManageExtensions, SIGNAL (activated ()), this,SLOT (slothelpManageExtensions ()));
+  connect (helpManageExtensions, SIGNAL (triggered ()), this,SLOT (slothelpManageExtensions ()));
 
-  helpSamples = new QAction (tr ("&Samples"), tr ("&Samples"), 0, this);
+  helpSamples = q3NewAction (tr ("&Samples"), tr ("&Samples"), 0, this);
   helpSamples->setStatusTip (tr (""));
   helpSamples->setWhatsThis (tr ("&Samples\n\n"));
-  connect (helpSamples, SIGNAL (activated ()), this,SLOT (slothelpSamples ()));
-  helpF4lSupportCenter = new QAction (tr ("F4L Support &Center"), tr ("F4L Support &Center"), 0, this);
+  connect (helpSamples, SIGNAL (triggered ()), this,SLOT (slothelpSamples ()));
+  helpF4lSupportCenter = q3NewAction (tr ("F4L Support &Center"), tr ("F4L Support &Center"), 0, this);
   helpF4lSupportCenter->setStatusTip (tr ("Open your web browser to the F4L Developers Center"));
   helpF4lSupportCenter->setWhatsThis (tr("F4L Support &Center\n\nOpen your web browser to the F4L Developers Center"));
-  connect (helpF4lSupportCenter, SIGNAL (activated ()), this,SLOT (slothelpF4lSupportCenter ()));
+  connect (helpF4lSupportCenter, SIGNAL (triggered ()), this,SLOT (slothelpF4lSupportCenter ()));
 
-  helpRegisterF4l = new QAction (tr ("&Register F4L"), tr ("&Register F4L"), 0, this);
+  helpRegisterF4l = q3NewAction (tr ("&Register F4L"), tr ("&Register F4L"), 0, this);
   helpRegisterF4l->setStatusTip (tr ("Register your copy of F4L using your web browser"));
   helpRegisterF4l->setWhatsThis (tr("&Register F4L\n\nRegister your copy of F4L using your web browser"));
-  connect (helpRegisterF4l, SIGNAL (activated ()), this,SLOT (slothelpRegisterF4l ()));
+  connect (helpRegisterF4l, SIGNAL (triggered ()), this,SLOT (slothelpRegisterF4l ()));
 
-  helpAboutApp = new QAction (tr ("About"), tr ("&About..."), 0, this);
+  helpAboutApp = q3NewAction (tr ("About"), tr ("&About..."), 0, this);
   helpAboutApp->setStatusTip (tr ("About the application"));
   helpAboutApp->setWhatsThis (tr ("About\n\nAbout the application"));
-  connect (helpAboutApp, SIGNAL (activated ()), this,SLOT (slotHelpAbout ()));
+  connect (helpAboutApp, SIGNAL (triggered ()), this,SLOT (slotHelpAbout ()));
 }
 
 void F4lmApp::initMenuBar ()
@@ -1204,75 +1205,75 @@ void F4lmApp::initMenuBar ()
   ///////////////////////////////////////////////////////////////////
   // menuBar entry pFileMenu
   pFileMenu = new QPopupMenu ();
-  fileNew->addTo (pFileMenu);
-  fileNewFromTemplate->addTo (pFileMenu);
-  fileOpen->addTo (pFileMenu);
-  fileOpenAsLibrary->addTo (pFileMenu);
-  fileClose->addTo (pFileMenu);
+  q3AddTo(fileNew, pFileMenu);
+  q3AddTo(fileNewFromTemplate, pFileMenu);
+  q3AddTo(fileOpen, pFileMenu);
+  q3AddTo(fileOpenAsLibrary, pFileMenu);
+  q3AddTo(fileClose, pFileMenu);
   pFileMenu->insertSeparator ();
-  fileSave->addTo (pFileMenu);
-  fileSaveAs->addTo (pFileMenu);
-  fileSaveAsTemplate->addTo (pFileMenu);
-  fileRevert->addTo (pFileMenu);
+  q3AddTo(fileSave, pFileMenu);
+  q3AddTo(fileSaveAs, pFileMenu);
+  q3AddTo(fileSaveAsTemplate, pFileMenu);
+  q3AddTo(fileRevert, pFileMenu);
   pFileMenu->insertSeparator ();
-  fileImport->addTo (pFileMenu);
-  fileImportToLibrary->addTo (pFileMenu);
-  fileExportMovie->addTo (pFileMenu);
-  fileExportImage->addTo (pFileMenu);
+  q3AddTo(fileImport, pFileMenu);
+  q3AddTo(fileImportToLibrary, pFileMenu);
+  q3AddTo(fileExportMovie, pFileMenu);
+  q3AddTo(fileExportImage, pFileMenu);
   pFileMenu->insertSeparator ();
   QPopupMenu * pFileMenuPublishPreview = new QPopupMenu ();
-  filePublishPreview_Default->addTo (pFileMenuPublishPreview);
-  filePublishPreview_Flash->addTo (pFileMenuPublishPreview);
-  filePublishPreview_GIF->addTo (pFileMenuPublishPreview);
-  filePublishPreview_Html->addTo (pFileMenuPublishPreview);
-  filePublishPreview_JPEG->addTo (pFileMenuPublishPreview);
-  filePublishPreview_PNG->addTo (pFileMenuPublishPreview);
-  filePublishPreview_Projector->addTo (pFileMenuPublishPreview);
-  filePublishPreview_Quicktime->addTo (pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_Default, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_Flash, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_GIF, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_Html, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_JPEG, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_PNG, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_Projector, pFileMenuPublishPreview);
+  q3AddTo(filePublishPreview_Quicktime, pFileMenuPublishPreview);
   pFileMenu->insertItem (tr ("Publish Preview"), pFileMenuPublishPreview);
-  filePublish->addTo (pFileMenu);
+  q3AddTo(filePublish, pFileMenu);
   pFileMenu->insertSeparator ();
-  filePageSetup->addTo (pFileMenu);
-  filePrintPreview->addTo (pFileMenu);
-  filePrint->addTo (pFileMenu);
+  q3AddTo(filePageSetup, pFileMenu);
+  q3AddTo(filePrintPreview, pFileMenu);
+  q3AddTo(filePrint, pFileMenu);
   pFileMenu->insertSeparator ();
-  fileSend->addTo (pFileMenu);
+  q3AddTo(fileSend, pFileMenu);
   pFileMenu->insertSeparator ();
   pFileMenu->insertItem (tr ("burda recent olacak ama nasl?"));
   pFileMenu->insertSeparator ();
-  fileQuit->addTo (pFileMenu);
+  q3AddTo(fileQuit, pFileMenu);
 
   ///////////////////////////////////////////////////////////////////
   // menuBar entry editMenu
   pEditMenu = new QPopupMenu ();
-  editUndo->addTo (pEditMenu);
-  editRedo->addTo (pEditMenu);
+  q3AddTo(editUndo, pEditMenu);
+  q3AddTo(editRedo, pEditMenu);
   pEditMenu->insertSeparator ();
-  editCut->addTo (pEditMenu);
-  editCopy->addTo (pEditMenu);
-  editPaste->addTo (pEditMenu);
-  editPasteinPlace->addTo (pEditMenu);
-  editPasteSpecial->addTo (pEditMenu);
-  editClear->addTo (pEditMenu);
+  q3AddTo(editCut, pEditMenu);
+  q3AddTo(editCopy, pEditMenu);
+  q3AddTo(editPaste, pEditMenu);
+  q3AddTo(editPasteinPlace, pEditMenu);
+  q3AddTo(editPasteSpecial, pEditMenu);
+  q3AddTo(editClear, pEditMenu);
   pEditMenu->insertSeparator ();
-  editDuplicate->addTo (pEditMenu);
-  editSelectAll->addTo (pEditMenu);
-  editDeselectAll->addTo (pEditMenu);
+  q3AddTo(editDuplicate, pEditMenu);
+  q3AddTo(editSelectAll, pEditMenu);
+  q3AddTo(editDeselectAll, pEditMenu);
   pEditMenu->insertSeparator ();
-  editCutFrames->addTo (pEditMenu);
-  editCopyFrames->addTo (pEditMenu);
-  editPasteFrames->addTo (pEditMenu);
-  editClearFrames->addTo (pEditMenu);
-  editSelectAllFrames->addTo (pEditMenu);
+  q3AddTo(editCutFrames, pEditMenu);
+  q3AddTo(editCopyFrames, pEditMenu);
+  q3AddTo(editPasteFrames, pEditMenu);
+  q3AddTo(editClearFrames, pEditMenu);
+  q3AddTo(editSelectAllFrames, pEditMenu);
   pEditMenu->insertSeparator ();
-  editEditSymbols->addTo (pEditMenu);
-  editEditSelected->addTo (pEditMenu);
-  editEditInPlace->addTo (pEditMenu);
-  editEditAll->addTo (pEditMenu);
+  q3AddTo(editEditSymbols, pEditMenu);
+  q3AddTo(editEditSelected, pEditMenu);
+  q3AddTo(editEditInPlace, pEditMenu);
+  q3AddTo(editEditAll, pEditMenu);
   pEditMenu->insertSeparator ();
-  editPrefences->addTo (pEditMenu);
-  editKeyboardShourtCuts->addTo (pEditMenu);
-  editFontMapping->addTo (pEditMenu);
+  q3AddTo(editPrefences, pEditMenu);
+  q3AddTo(editKeyboardShourtCuts, pEditMenu);
+  q3AddTo(editFontMapping, pEditMenu);
 
   ///////////////////////////////////////////////////////////////////
   // menuBar entry viewMenu
@@ -1281,141 +1282,141 @@ void F4lmApp::initMenuBar ()
   /*viewToolBar->addTo(pViewMenu);
      viewStatusBar->addTo(pViewMenu); */
   QPopupMenu * pViewMenuGOTO = new QPopupMenu ();
-  viewFirst->addTo (pViewMenuGOTO);
-  viewPrevious->addTo (pViewMenuGOTO);
-  viewNext->addTo (pViewMenuGOTO);
-  viewLast->addTo (pViewMenuGOTO);
+  q3AddTo(viewFirst, pViewMenuGOTO);
+  q3AddTo(viewPrevious, pViewMenuGOTO);
+  q3AddTo(viewNext, pViewMenuGOTO);
+  q3AddTo(viewLast, pViewMenuGOTO);
   pViewMenuGOTO->insertSeparator ();
-  viewScenes->addTo (pViewMenuGOTO);
+  q3AddTo(viewScenes, pViewMenuGOTO);
   pViewMenu->insertItem (tr ("&Go To"), pViewMenuGOTO);
   pViewMenu->insertSeparator ();
-  viewZoomIn->addTo (pViewMenu);
-  viewZoomOut->addTo (pViewMenu);
+  q3AddTo(viewZoomIn, pViewMenu);
+  q3AddTo(viewZoomOut, pViewMenu);
   QPopupMenu * pViewMenuMagnification = new QPopupMenu ();
-  viewMagnification25->addTo (pViewMenuMagnification);
-  viewMagnification50->addTo (pViewMenuMagnification);
-  viewMagnification100->addTo (pViewMenuMagnification);
-  viewMagnification200->addTo (pViewMenuMagnification);
-  viewMagnification400->addTo (pViewMenuMagnification);
-  viewMagnification800->addTo (pViewMenuMagnification);
+  q3AddTo(viewMagnification25, pViewMenuMagnification);
+  q3AddTo(viewMagnification50, pViewMenuMagnification);
+  q3AddTo(viewMagnification100, pViewMenuMagnification);
+  q3AddTo(viewMagnification200, pViewMenuMagnification);
+  q3AddTo(viewMagnification400, pViewMenuMagnification);
+  q3AddTo(viewMagnification800, pViewMenuMagnification);
   pViewMenuMagnification->insertSeparator ();
-  viewShowFrame->addTo (pViewMenuMagnification);
-  viewShowAll->addTo (pViewMenuMagnification);
+  q3AddTo(viewShowFrame, pViewMenuMagnification);
+  q3AddTo(viewShowAll, pViewMenuMagnification);
   pViewMenu->insertItem (tr ("&Magnification"), pViewMenuMagnification);
   pViewMenu->insertSeparator ();
-  viewAction->addTo (pViewMenu);
+  q3AddTo(viewAction, pViewMenu);
   pViewMenu->insertSeparator ();
-  viewTimeline->addTo (pViewMenu);
-  viewWorkArea->addTo (pViewMenu);
+  q3AddTo(viewTimeline, pViewMenu);
+  q3AddTo(viewWorkArea, pViewMenu);
   pViewMenu->insertSeparator ();
-  viewRulers->addTo (pViewMenu);
+  q3AddTo(viewRulers, pViewMenu);
   QPopupMenu * pViewMenuGrid = new QPopupMenu ();
-  viewShowGrid->addTo (pViewMenuGrid);
-  viewSnaptoGrid->addTo (pViewMenuGrid);
-  viewEditGrid->addTo (pViewMenuGrid);
+  q3AddTo(viewShowGrid, pViewMenuGrid);
+  q3AddTo(viewSnaptoGrid, pViewMenuGrid);
+  q3AddTo(viewEditGrid, pViewMenuGrid);
   pViewMenu->insertItem (tr ("Gri&d"), pViewMenuGrid);
   QPopupMenu * pViewMenuGuides = new QPopupMenu ();
-  viewShowGuides->addTo (pViewMenuGuides);
-  viewLockGuides->addTo (pViewMenuGuides);
-  viewSnaptoGuides->addTo (pViewMenuGuides);
-  viewEditGuides->addTo (pViewMenuGuides);
+  q3AddTo(viewShowGuides, pViewMenuGuides);
+  q3AddTo(viewLockGuides, pViewMenuGuides);
+  q3AddTo(viewSnaptoGuides, pViewMenuGuides);
+  q3AddTo(viewEditGuides, pViewMenuGuides);
   pViewMenu->insertSeparator ();
-  viewSnaptoPixels->addTo (pViewMenu);
-  viewSnaptoObjects->addTo (pViewMenu);
+  q3AddTo(viewSnaptoPixels, pViewMenu);
+  q3AddTo(viewSnaptoObjects, pViewMenu);
   pViewMenu->insertSeparator ();
-  viewShowShapeHints->addTo (pViewMenu);
+  q3AddTo(viewShowShapeHints, pViewMenu);
   pViewMenu->insertSeparator ();
-  viewHideEdges->addTo (pViewMenu);
-  viewHidePanels->addTo (pViewMenu);
+  q3AddTo(viewHideEdges, pViewMenu);
+  q3AddTo(viewHidePanels, pViewMenu);
 
   ///////////////////////////////////////////////////////////////////
   // EDIT YOUR APPLICATION SPECIFIC MENUENTRIES HERE
   pInsertMenu = new QPopupMenu ();
-  insertConverttoSymbol->addTo (pInsertMenu);
-  insertNewSymbol->addTo (pInsertMenu);
+  q3AddTo(insertConverttoSymbol, pInsertMenu);
+  q3AddTo(insertNewSymbol, pInsertMenu);
   pInsertMenu->insertSeparator ();
-  insertLayer->addTo (pInsertMenu);
-  insertLayerFolder->addTo (pInsertMenu);
-  insertMotionGuide->addTo (pInsertMenu);
+  q3AddTo(insertLayer, pInsertMenu);
+  q3AddTo(insertLayerFolder, pInsertMenu);
+  q3AddTo(insertMotionGuide, pInsertMenu);
   pInsertMenu->insertSeparator ();
-  insertFrame->addTo (pInsertMenu);
-  insertRemoveFrames->addTo (pInsertMenu);
+  q3AddTo(insertFrame, pInsertMenu);
+  q3AddTo(insertRemoveFrames, pInsertMenu);
   pInsertMenu->insertSeparator ();
-  insertKeyframe->addTo (pInsertMenu);
-  insertBlankKeyframe->addTo (pInsertMenu);
-  insertClearKeyframe->addTo (pInsertMenu);
+  q3AddTo(insertKeyframe, pInsertMenu);
+  q3AddTo(insertBlankKeyframe, pInsertMenu);
+  q3AddTo(insertClearKeyframe, pInsertMenu);
   pInsertMenu->insertSeparator ();
-  insertCreateMotionTween->addTo (pInsertMenu);
+  q3AddTo(insertCreateMotionTween, pInsertMenu);
   pInsertMenu->insertSeparator ();
-  insertScene->addTo (pInsertMenu);
-  insertRemoveScene->addTo (pInsertMenu);
+  q3AddTo(insertScene, pInsertMenu);
+  q3AddTo(insertRemoveScene, pInsertMenu);
 
   pModifyMenu = new QPopupMenu ();
-  modifyLayer->addTo (pModifyMenu);
-  modifyScene->addTo (pModifyMenu);
-  modifyDocument->addTo (pModifyMenu);
+  q3AddTo(modifyLayer, pModifyMenu);
+  q3AddTo(modifyScene, pModifyMenu);
+  q3AddTo(modifyDocument, pModifyMenu);
   pModifyMenu->insertSeparator ();
-  modifySmooth->addTo (pModifyMenu);
-  modifyStraighten->addTo (pModifyMenu);
-  modifyOptimize->addTo (pModifyMenu);
+  q3AddTo(modifySmooth, pModifyMenu);
+  q3AddTo(modifyStraighten, pModifyMenu);
+  q3AddTo(modifyOptimize, pModifyMenu);
 
   QPopupMenu * pModifyMenuShape = new QPopupMenu ();
-  modifyConvertLinestoFills->addTo (pModifyMenuShape);
-  modifyExpandFill->addTo (pModifyMenuShape);
-  modifySoftenFillEdges->addTo (pModifyMenuShape);
+  q3AddTo(modifyConvertLinestoFills, pModifyMenuShape);
+  q3AddTo(modifyExpandFill, pModifyMenuShape);
+  q3AddTo(modifySoftenFillEdges, pModifyMenuShape);
   pModifyMenuShape->insertSeparator ();
-  modifyAddShapeHint->addTo (pModifyMenuShape);
-  modifyRemoveAllHints->addTo (pModifyMenuShape);
+  q3AddTo(modifyAddShapeHint, pModifyMenuShape);
+  q3AddTo(modifyRemoveAllHints, pModifyMenuShape);
   pModifyMenu->insertItem (tr ("Sha&pe"), pModifyMenuShape);
   pModifyMenu->insertSeparator ();
-  modifySwapSymbol->addTo (pModifyMenu);
-  modifyDuplicateSymbol->addTo (pModifyMenu);
+  q3AddTo(modifySwapSymbol, pModifyMenu);
+  q3AddTo(modifyDuplicateSymbol, pModifyMenu);
   pModifyMenu->insertSeparator ();
-  modifySwapBitmap->addTo (pModifyMenu);
-  modifyTraceBitmap->addTo (pModifyMenu);
+  q3AddTo(modifySwapBitmap, pModifyMenu);
+  q3AddTo(modifyTraceBitmap, pModifyMenu);
   pModifyMenu->insertSeparator ();
 
   QPopupMenu * pModifyMenuTransform = new QPopupMenu ();
-  modifyFreeTransform->addTo (pModifyMenuTransform);
-  modifyDistort->addTo (pModifyMenuTransform);
-  modifyEnvelope->addTo (pModifyMenuTransform);
-  modifyScale->addTo (pModifyMenuTransform);
-  modifyRotateandSkew->addTo (pModifyMenuTransform);
-  modifyScaleandRotate->addTo (pModifyMenuTransform);
+  q3AddTo(modifyFreeTransform, pModifyMenuTransform);
+  q3AddTo(modifyDistort, pModifyMenuTransform);
+  q3AddTo(modifyEnvelope, pModifyMenuTransform);
+  q3AddTo(modifyScale, pModifyMenuTransform);
+  q3AddTo(modifyRotateandSkew, pModifyMenuTransform);
+  q3AddTo(modifyScaleandRotate, pModifyMenuTransform);
   pModifyMenuTransform->insertSeparator ();
-  modifyRotate90CW->addTo (pModifyMenuTransform);
-  modifyRotate90CCW->addTo (pModifyMenuTransform);
+  q3AddTo(modifyRotate90CW, pModifyMenuTransform);
+  q3AddTo(modifyRotate90CCW, pModifyMenuTransform);
   pModifyMenuTransform->insertSeparator ();
-  modifyFlipVertical->addTo (pModifyMenuTransform);
-  modifyFlipHorizontal->addTo (pModifyMenuTransform);
+  q3AddTo(modifyFlipVertical, pModifyMenuTransform);
+  q3AddTo(modifyFlipHorizontal, pModifyMenuTransform);
   pModifyMenuTransform->insertSeparator ();
-  modifyRemoveTransform->addTo (pModifyMenuTransform);
+  q3AddTo(modifyRemoveTransform, pModifyMenuTransform);
   pModifyMenu->insertItem (tr ("&Transform"), pModifyMenuTransform);
 
   QPopupMenu * pModifyMenuArrange = new QPopupMenu ();
-  modifyBringtoFront->addTo (pModifyMenuArrange);
-  modifyBringForward->addTo (pModifyMenuArrange);
-  modifySendBackward->addTo (pModifyMenuArrange);
-  modifySendtoBack->addTo (pModifyMenuArrange);
+  q3AddTo(modifyBringtoFront, pModifyMenuArrange);
+  q3AddTo(modifyBringForward, pModifyMenuArrange);
+  q3AddTo(modifySendBackward, pModifyMenuArrange);
+  q3AddTo(modifySendtoBack, pModifyMenuArrange);
   pModifyMenuArrange->insertSeparator ();
-  modifyLock->addTo (pModifyMenuArrange);
-  modifyUnlockAll->addTo (pModifyMenuArrange);
+  q3AddTo(modifyLock, pModifyMenuArrange);
+  q3AddTo(modifyUnlockAll, pModifyMenuArrange);
   pModifyMenuArrange->insertSeparator ();
   pModifyMenu->insertItem (tr ("&Arrange"), pModifyMenuArrange);
   pModifyMenu->insertSeparator ();
 
   QPopupMenu * pModifyMenuFrames = new QPopupMenu ();
-  modifyReverse->addTo (pModifyMenuFrames);
-  modifySynchronizeSymbols->addTo (pModifyMenuFrames);
-  modifyConverttoKeyframes->addTo (pModifyMenuFrames);
-  modifyConverttoBlankKeyframes->addTo (pModifyMenuFrames);
+  q3AddTo(modifyReverse, pModifyMenuFrames);
+  q3AddTo(modifySynchronizeSymbols, pModifyMenuFrames);
+  q3AddTo(modifyConverttoKeyframes, pModifyMenuFrames);
+  q3AddTo(modifyConverttoBlankKeyframes, pModifyMenuFrames);
   pModifyMenu->insertItem (tr ("Fram&es"), pModifyMenuFrames);
   pModifyMenu->insertSeparator ();
-  modifyGroup->addTo (pModifyMenu);
-  modifyUngroup->addTo (pModifyMenu);
+  q3AddTo(modifyGroup, pModifyMenu);
+  q3AddTo(modifyUngroup, pModifyMenu);
   pModifyMenu->insertSeparator ();
-  modifyBreakApart->addTo (pModifyMenu);
-  modifyDistributetoLayers->addTo (pModifyMenu);
+  q3AddTo(modifyBreakApart, pModifyMenu);
+  q3AddTo(modifyDistributetoLayers, pModifyMenu);
   pTextMenu = new QPopupMenu ();
   QPopupMenu * pTextMenuFont = new QPopupMenu ();
   //textFontFace->addTo(pTextMenuFont);
@@ -1452,70 +1453,70 @@ void F4lmApp::initMenuBar ()
 
   pTextMenu->insertItem (tr ("&Font"), pTextMenuFont);
   QPopupMenu * pTextMenuSize = new QPopupMenu ();
-  text8->addTo (pTextMenuSize);
-  text9->addTo (pTextMenuSize);
-  text10->addTo (pTextMenuSize);
-  text11->addTo (pTextMenuSize);
-  text12->addTo (pTextMenuSize);
-  text14->addTo (pTextMenuSize);
-  text18->addTo (pTextMenuSize);
-  text24->addTo (pTextMenuSize);
-  text36->addTo (pTextMenuSize);
-  text48->addTo (pTextMenuSize);
-  text72->addTo (pTextMenuSize);
-  text96->addTo (pTextMenuSize);
-  text120->addTo (pTextMenuSize);
+  q3AddTo(text8, pTextMenuSize);
+  q3AddTo(text9, pTextMenuSize);
+  q3AddTo(text10, pTextMenuSize);
+  q3AddTo(text11, pTextMenuSize);
+  q3AddTo(text12, pTextMenuSize);
+  q3AddTo(text14, pTextMenuSize);
+  q3AddTo(text18, pTextMenuSize);
+  q3AddTo(text24, pTextMenuSize);
+  q3AddTo(text36, pTextMenuSize);
+  q3AddTo(text48, pTextMenuSize);
+  q3AddTo(text72, pTextMenuSize);
+  q3AddTo(text96, pTextMenuSize);
+  q3AddTo(text120, pTextMenuSize);
 
   pTextMenu->insertItem (tr ("&Size"), pTextMenuSize);
 
   QPopupMenu * pTextMenuStyle = new QPopupMenu ();
-  textPlain->addTo (pTextMenuStyle);
+  q3AddTo(textPlain, pTextMenuStyle);
 
   pTextMenuStyle->insertSeparator ();
-  textBold->addTo (pTextMenuStyle);
-  textItalic->addTo (pTextMenuStyle);
+  q3AddTo(textBold, pTextMenuStyle);
+  q3AddTo(textItalic, pTextMenuStyle);
   pTextMenuStyle->insertSeparator ();
 
-  textSubscript->addTo (pTextMenuStyle);
-  textSuperscript->addTo (pTextMenuStyle);
+  q3AddTo(textSubscript, pTextMenuStyle);
+  q3AddTo(textSuperscript, pTextMenuStyle);
   pTextMenu->insertItem (tr ("St&yle"), pTextMenuStyle);
   QPopupMenu * pTextMenuAlign = new QPopupMenu ();
 
-  textAlignLeft->addTo (pTextMenuAlign);
-  textAlignCenter->addTo (pTextMenuAlign);
-  textAlignRight->addTo (pTextMenuAlign);
-  textJustify->addTo (pTextMenuAlign);
+  q3AddTo(textAlignLeft, pTextMenuAlign);
+  q3AddTo(textAlignCenter, pTextMenuAlign);
+  q3AddTo(textAlignRight, pTextMenuAlign);
+  q3AddTo(textJustify, pTextMenuAlign);
 
   pTextMenu->insertItem (tr ("&Align"), pTextMenuAlign);
 
   QPopupMenu * pTextMenuTracking = new QPopupMenu ();
-  textIncrease->addTo (pTextMenuTracking);
-  textDecrease->addTo (pTextMenuTracking);
+  q3AddTo(textIncrease, pTextMenuTracking);
+  q3AddTo(textDecrease, pTextMenuTracking);
   pTextMenuTracking->insertSeparator ();
-  textReset->addTo (pTextMenuTracking);
+  q3AddTo(textReset, pTextMenuTracking);
   pTextMenu->insertItem (tr ("&Tracking"), pTextMenuTracking);
   pTextMenu->insertSeparator ();
-  textScrollable->addTo (pTextMenu);
+  q3AddTo(textScrollable, pTextMenu);
 
   pControlMenu = new QPopupMenu ();
-  controlPlay->addTo (pControlMenu);
-  controlRewind->addTo (pControlMenu);
-  controlGoToEnd->addTo (pControlMenu);
+  q3AddTo(controlPlay, pControlMenu);
+  q3AddTo(controlRewind, pControlMenu);
+  q3AddTo(controlGoToEnd, pControlMenu);
   pControlMenu->insertSeparator ();
-  controlStepForward->addTo (pControlMenu);
-  controlStepBackward->addTo (pControlMenu);
+  q3AddTo(controlStepForward, pControlMenu);
+  q3AddTo(controlStepBackward, pControlMenu);
   pControlMenu->insertSeparator ();
-  controlTestMovie->addTo (pControlMenu);
-  controlDebugMovie->addTo (pControlMenu);
-  controlTestScene->addTo (pControlMenu);
+  q3AddTo(controlTestMovie, pControlMenu);
+  q3AddTo(controlDebugMovie, pControlMenu);
+  q3AddTo(controlTestScene, pControlMenu);
   pControlMenu->insertSeparator ();
-  controlLoopPlayback->addTo (pControlMenu);
-  controlPlayAllScenes->addTo (pControlMenu);
+  q3AddTo(controlLoopPlayback, pControlMenu);
+  q3AddTo(controlPlayAllScenes, pControlMenu);
   pControlMenu->insertSeparator ();
-  controlEnableSimpleFrameActions->addTo (pControlMenu);
-  controlEnableSimpleButtons->addTo (pControlMenu);
-  controlMuteSounds->addTo (pControlMenu);
-  controlEnableLivePreview->addTo (pControlMenu);
+  q3AddTo(controlEnableSimpleFrameActions, pControlMenu);
+  q3AddTo(controlEnableSimpleButtons, pControlMenu);
+  q3AddTo(controlMuteSounds, pControlMenu);
+  q3AddTo(controlEnableLivePreview, pControlMenu);
 
   ///////////////////////////////////////////////////////////////////
   // menuBar entry windowMenu
@@ -1532,53 +1533,62 @@ void F4lmApp::initMenuBar ()
   // menuBar entry helpMenu
   pHelpMenu = new QPopupMenu ();
 
-  helpUsingF4l->addTo (pHelpMenu);
+  q3AddTo(helpUsingF4l, pHelpMenu);
 
-  helpActionScriptDictionary->addTo (pHelpMenu);
-
-  pHelpMenu->insertSeparator ();
-
-  helpF4lExchange->addTo (pHelpMenu);
-  helpManageExtensions->addTo (pHelpMenu);
-  helpSamples->addTo (pHelpMenu);
+  q3AddTo(helpActionScriptDictionary, pHelpMenu);
 
   pHelpMenu->insertSeparator ();
-  helpF4lSupportCenter->addTo (pHelpMenu);
-  helpRegisterF4l->addTo (pHelpMenu);
+
+  q3AddTo(helpF4lExchange, pHelpMenu);
+  q3AddTo(helpManageExtensions, pHelpMenu);
+  q3AddTo(helpSamples, pHelpMenu);
+
   pHelpMenu->insertSeparator ();
-  helpAboutApp->addTo (pHelpMenu);
+  q3AddTo(helpF4lSupportCenter, pHelpMenu);
+  q3AddTo(helpRegisterF4l, pHelpMenu);
+  pHelpMenu->insertSeparator ();
+  q3AddTo(helpAboutApp, pHelpMenu);
   pHelpMenu->insertSeparator ();
   pHelpMenu->insertItem (tr ("What's &This"), this, SLOT (whatsThis ()),
-                         SHIFT + Key_F1);
+                         QKeySequence (Qt::SHIFT + Qt::Key_F1));
 
-  menuBar()->insertItem (tr ("&File"), pFileMenu);
-  menuBar()->insertItem (tr ("&Edit"), pEditMenu);
-  menuBar()->insertItem (tr ("&View"), pViewMenu);
-  menuBar()->insertItem (tr ("&Insert"), pInsertMenu);
-  menuBar()->insertItem (tr ("&Modify"), pModifyMenu);
-  menuBar()->insertItem (tr ("&Text"), pTextMenu);
-  menuBar()->insertItem (tr ("&Control"), pControlMenu);
-  menuBar()->insertItem (tr ("&Window"), pWindowMenu);
-  menuBar()->insertItem (tr ("&Help"), pHelpMenu);
+  pFileMenu->setTitle (tr ("&File"));
+  pEditMenu->setTitle (tr ("&Edit"));
+  pViewMenu->setTitle (tr ("&View"));
+  pInsertMenu->setTitle (tr ("&Insert"));
+  pModifyMenu->setTitle (tr ("&Modify"));
+  pTextMenu->setTitle (tr ("&Text"));
+  pControlMenu->setTitle (tr ("&Control"));
+  pWindowMenu->setTitle (tr ("&Window"));
+  pHelpMenu->setTitle (tr ("&Help"));
+  menuBar()->addMenu (pFileMenu);
+  menuBar()->addMenu (pEditMenu);
+  menuBar()->addMenu (pViewMenu);
+  menuBar()->addMenu (pInsertMenu);
+  menuBar()->addMenu (pModifyMenu);
+  menuBar()->addMenu (pTextMenu);
+  menuBar()->addMenu (pControlMenu);
+  menuBar()->addMenu (pWindowMenu);
+  menuBar()->addMenu (pHelpMenu);
 }
 
 void F4lmApp::initToolBar ()
 {
   ///////////////////////////////////////////////////////////////////
   // TOOLBAR
-  fileToolbar = new QToolBar (this, "file operations");
-  fileNew->addTo (fileToolbar);
-  fileOpen->addTo (fileToolbar);
-  fileSave->addTo (fileToolbar);
+  fileToolbar = new QToolBar (tr ("file operations"), this);
+  q3AddTo(fileNew, fileToolbar);
+  q3AddTo(fileOpen, fileToolbar);
+  q3AddTo(fileSave, fileToolbar);
   fileToolbar->addSeparator ();
-  QWhatsThis::whatsThisButton (fileToolbar);
+  fileToolbar->addAction (QWhatsThis::createAction (this));
 }
 
 void F4lmApp::initStatusBar ()
 {
   ///////////////////////////////////////////////////////////////////
   //STATUSBAR
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::initView ()
@@ -1595,7 +1605,9 @@ void F4lmApp::createClient (F4lmDoc * doc)
 {
   F4lmView * ex = slotCurrentView ();
   F4lmView * w = new F4lmView (doc, pWorkspace, 0, WDestructiveClose);
-
+  QMdiSubWindow * sub = pWorkspace->addWindow (w);
+  sub->setAttribute (Qt::WA_DeleteOnClose);
+  sub->installEventFilter (this);
   w->installEventFilter (this);
   if (ex)
   {
@@ -1603,17 +1615,17 @@ void F4lmApp::createClient (F4lmDoc * doc)
     w->defObjCOLOR = ex->defObjCOLOR;
   }
   doc->addView (w);
-  if (pWorkspace->windowList ().isEmpty ())	// show the very first window in maximized mode
-    w->showMaximized ();
+  if (pWorkspace->windowList ().count () <= 1)
+    sub->showMaximized ();
   else
     w->show ();
 }
 
 
 
-void F4lmApp::openDocumentFile (const char *file)
+void F4lmApp::openDocumentFile (const QString &file)
 {
-  statusBar ()->message (tr ("Opening file..."));
+  statusBar ()->showMessage (tr ("Opening file..."));
 
   F4lmDoc * doc;
   // check, if document already open. If yes, set the focus to the first view
@@ -1631,8 +1643,8 @@ void F4lmApp::openDocumentFile (const char *file)
   pDocList->append (doc);
   doc->newDocument ();
 
-  // Creates an untitled window if file is 0
-  if (!file)
+  // Creates an untitled window if file is empty
+  if (file.isEmpty ())
   {
     untitledCount += 1;
     QString fileName = QString (tr ("Untitled%1")).arg (untitledCount);
@@ -1653,31 +1665,38 @@ void F4lmApp::openDocumentFile (const char *file)
   // create the window
   createClient (doc);
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 bool F4lmApp::queryExit ()
 {
-  int
-  exit = QMessageBox::information (this, tr ("Quit..."),
-                                   tr ("Do your really want to quit?"),
-                                   QMessageBox::Ok, QMessageBox::Cancel);
+  QMessageBox::StandardButton exit =
+    QMessageBox::information (this, tr ("Quit..."),
+                              tr ("Do your really want to quit?"),
+                              QMessageBox::Ok | QMessageBox::Cancel);
 
-  if (exit == 1)
+  if (exit == QMessageBox::Ok)
   {}
   else
   {}
-  ;
 
-  return (exit == 1);
+  return (exit == QMessageBox::Ok);
 }
 
 bool F4lmApp::eventFilter (QObject * object, QEvent * event)
 {
-  if ((event->type () == QEvent::Close) && ((F4lmApp *) object != this))
+  if ((event->type () == QEvent::Close) && (object != this))
   {
     QCloseEvent * e = (QCloseEvent *) event;
-    F4lmView * pView = (F4lmView *) object;
+    F4lmView * pView = qobject_cast<F4lmView *> (object);
+    if (!pView)
+    {
+      QMdiSubWindow * sub = qobject_cast<QMdiSubWindow *> (object);
+      if (sub)
+        pView = qobject_cast<F4lmView *> (sub->widget ());
+    }
+    if (!pView)
+      return QWidget::eventFilter (object, event);
 
     F4lmDoc * pDoc = pView->getDocument ();
     if (pDoc->canCloseFrame (pView))
@@ -1704,29 +1723,29 @@ bool F4lmApp::eventFilter (QObject * object, QEvent * event)
 
 void F4lmApp::slotFileNew ()
 {
-  statusBar ()->message (tr ("Creating new file..."));
+  statusBar ()->showMessage (tr ("Creating new file..."));
   openDocumentFile ();
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotfileNewFromTemplate (void) {}
 
 void F4lmApp::slotFileOpen ()
 {
-  statusBar ()->message (tr ("Opening file..."));
+  statusBar ()->showMessage (tr ("Opening file..."));
 
-  QString fileName = QFileDialog::getOpenFileName (0, 0, this);
+  QString fileName = QFileDialog::getOpenFileName (this);
   if (!fileName.isEmpty ())
   {
     openDocumentFile (fileName);
   }
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotFileSave ()
 {
-  statusBar ()->message (tr ("Saving file..."));
+  statusBar ()->showMessage (tr ("Saving file..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
@@ -1740,14 +1759,14 @@ void F4lmApp::slotFileSave ()
                                tr ("Could not save the current document !"));
   }
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotFileSaveAs ()
 {
-  statusBar ()->message (tr ("Saving file under new filename..."));
+  statusBar ()->showMessage (tr ("Saving file under new filename..."));
 
-  QString fn = QFileDialog::getSaveFileName (0, 0, this);
+  QString fn = QFileDialog::getSaveFileName (this);
   if (!fn.isEmpty ())
   {
     F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
@@ -1765,13 +1784,13 @@ void F4lmApp::slotFileSaveAs ()
     }
   }
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 
 void F4lmApp::slotFileClose ()
 {
-  statusBar ()->message (tr ("Closing file..."));
+  statusBar ()->showMessage (tr ("Closing file..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
@@ -1780,25 +1799,25 @@ void F4lmApp::slotFileClose ()
     doc->closeDocument ();
   }
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotFilePrint ()
 {
-  statusBar ()->message (tr ("Printing..."));
+  statusBar ()->showMessage (tr ("Printing..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
     m->print (printer);
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 
 void F4lmApp::slotFileQuit ()
 {
 
-  statusBar ()->message (tr ("Exiting application..."));
+  statusBar ()->showMessage (tr ("Exiting application..."));
 
   ///////////////////////////////////////////////////////////////////
   // exits the Application
@@ -1819,54 +1838,54 @@ void F4lmApp::slotFileQuit ()
 
   //  };
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 
 }
 
 void F4lmApp::slotEditUndo ()
 {
-  statusBar ()->message (tr ("Reverting last action..."));
+  statusBar ()->showMessage (tr ("Reverting last action..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
     //   m->undo();
-    statusBar ()->message (tr ("Ready."));
+    statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotEditCut ()
 {
-  statusBar ()->message (tr ("Cutting selection..."));
+  statusBar ()->showMessage (tr ("Cutting selection..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
     //  m->cut();
-    statusBar ()->message (tr ("Ready."));
+    statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotEditCopy ()
 {
-  statusBar ()->message (tr ("Copying selection to clipboard..."));
+  statusBar ()->showMessage (tr ("Copying selection to clipboard..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
     //  m->copy();
-    statusBar ()->message (tr ("Ready."));
+    statusBar ()->showMessage (tr ("Ready."));
 }
 
 
 void F4lmApp::slotEditPaste ()
 {
-  statusBar ()->message (tr ("Inserting clipboard contents..."));
+  statusBar ()->showMessage (tr ("Inserting clipboard contents..."));
 
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
     //   m->paste();
-    statusBar ()->message (tr ("Ready."));
+    statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotViewToolBar (bool toggle)
 {
-  statusBar ()->message (tr ("Toggle toolbar..."));
+  statusBar ()->showMessage (tr ("Toggle toolbar..."));
   ///////////////////////////////////////////////////////////////////
   // turn Toolbar on or off
   if (toggle == false)
@@ -1878,12 +1897,12 @@ void F4lmApp::slotViewToolBar (bool toggle)
     fileToolbar->show ();
   };
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotViewStatusBar (bool toggle)
 {
-  statusBar ()->message (tr ("Toggle statusbar..."));
+  statusBar ()->showMessage (tr ("Toggle statusbar..."));
   ///////////////////////////////////////////////////////////////////
   //turn Statusbar on or off
   if (toggle == false)
@@ -1895,19 +1914,19 @@ void F4lmApp::slotViewStatusBar (bool toggle)
     statusBar ()->show ();
   }
 
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotWindowNewWindow ()
 {
-  statusBar ()->message (tr ("Opening new document view..."));
+  statusBar ()->showMessage (tr ("Opening new document view..."));
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
   {
     F4lmDoc * doc = m->getDocument ();
     createClient (doc);
   }
-  statusBar ()->message (tr ("Ready."));
+  statusBar ()->showMessage (tr ("Ready."));
 }
 
 void F4lmApp::slotHelpAbout ()
@@ -1921,55 +1940,55 @@ void F4lmApp::slotStatusHelpMsg (const QString & text)
 {
   ///////////////////////////////////////////////////////////////////
   // change status message of whole statusbar temporary (text, msec)
-  statusBar ()->message (text, 2000);
+  statusBar ()->showMessage (text, 2000);
 }
 
 void F4lmApp::windowMenuAboutToShow ()
 {
   pWindowMenu->clear ();
-  windowNewWindow->addTo (pWindowMenu);
+  q3AddTo(windowNewWindow, pWindowMenu);
   pWindowMenu->insertSeparator ();
 
   QPopupMenu * pWindowMenuToolbars = new QPopupMenu ();
-  viewToolBar->addTo (pWindowMenuToolbars);
-  viewStatusBar->addTo (pWindowMenuToolbars);
-  windowController->addTo (pWindowMenuToolbars);
+  q3AddTo(viewToolBar, pWindowMenuToolbars);
+  q3AddTo(viewStatusBar, pWindowMenuToolbars);
+  q3AddTo(windowController, pWindowMenuToolbars);
   pWindowMenu->insertItem ("T&oolbars", pWindowMenuToolbars);
-  windowTools->addTo (pWindowMenu);
-  windowTimeLine->addTo (pWindowMenu);
-  windowProperties->addTo (pWindowMenu);
-  windowAnswers->addTo (pWindowMenu);
+  q3AddTo(windowTools, pWindowMenu);
+  q3AddTo(windowTimeLine, pWindowMenu);
+  q3AddTo(windowProperties, pWindowMenu);
+  q3AddTo(windowAnswers, pWindowMenu);
   pWindowMenu->insertSeparator ();
-  windowAlign->addTo (pWindowMenu);
-  windowColorMixer->addTo (pWindowMenu);
-  windowColorSwatches->addTo (pWindowMenu);
-  windowInfo->addTo (pWindowMenu);
-  windowScene->addTo (pWindowMenu);
-  windowTransform->addTo (pWindowMenu);
+  q3AddTo(windowAlign, pWindowMenu);
+  q3AddTo(windowColorMixer, pWindowMenu);
+  q3AddTo(windowColorSwatches, pWindowMenu);
+  q3AddTo(windowInfo, pWindowMenu);
+  q3AddTo(windowScene, pWindowMenu);
+  q3AddTo(windowTransform, pWindowMenu);
   pWindowMenu->insertSeparator ();
-  windowActions->addTo (pWindowMenu);
-  windowDebugger->addTo (pWindowMenu);
-  windowMovieExplorer->addTo (pWindowMenu);
-  windowReference->addTo (pWindowMenu);
-  windowOutput->addTo (pWindowMenu);
-  windowAccessibility->addTo (pWindowMenu);
-  windowComponents->addTo (pWindowMenu);
-  windowComponentParameters->addTo (pWindowMenu);
-  windowLibrary->addTo (pWindowMenu);
+  q3AddTo(windowActions, pWindowMenu);
+  q3AddTo(windowDebugger, pWindowMenu);
+  q3AddTo(windowMovieExplorer, pWindowMenu);
+  q3AddTo(windowReference, pWindowMenu);
+  q3AddTo(windowOutput, pWindowMenu);
+  q3AddTo(windowAccessibility, pWindowMenu);
+  q3AddTo(windowComponents, pWindowMenu);
+  q3AddTo(windowComponentParameters, pWindowMenu);
+  q3AddTo(windowLibrary, pWindowMenu);
 
   QPopupMenu * pWindowMenuLibraries = new QPopupMenu ();
-  windowlibraries->addTo (pWindowMenuLibraries);
+  q3AddTo(windowlibraries, pWindowMenuLibraries);
   pWindowMenu->insertItem ("Common Li&braries", pWindowMenuLibraries);
   pWindowMenu->insertSeparator ();
 
   QPopupMenu * pWindowMenuPanelSets = new QPopupMenu ();
-  windowPanelSets->addTo (pWindowMenuPanelSets);
+  q3AddTo(windowPanelSets, pWindowMenuPanelSets);
   pWindowMenu->insertItem ("Panel Sets", pWindowMenuPanelSets);
-  windowSavePanelLayout->addTo (pWindowMenu);
-  windowCloseAllPanels->addTo (pWindowMenu);
+  q3AddTo(windowSavePanelLayout, pWindowMenu);
+  q3AddTo(windowCloseAllPanels, pWindowMenu);
   pWindowMenu->insertSeparator ();
-  windowCascade->addTo (pWindowMenu);
-  windowTile->addTo (pWindowMenu);
+  q3AddTo(windowCascade, pWindowMenu);
+  q3AddTo(windowTile, pWindowMenu);
   if (pWorkspace->windowList ().isEmpty ())
   {
     windowAction->setEnabled (false);
@@ -1985,7 +2004,7 @@ void F4lmApp::windowMenuAboutToShow ()
   for (int i = 0; i < int (windows.count ()); ++i)
   {
     int id = pWindowMenuWindowList->insertItem (QString ("&%1 ").arg (i + 1) +
-             windows.at (i)->caption (), this,
+             windows.at (i)->windowTitle (), this,
              SLOT (windowMenuActivated (int)));
     pWindowMenuWindowList->setItemParameter (id, i);
     pWindowMenuWindowList->setItemChecked (id,
@@ -2013,7 +2032,7 @@ void F4lmApp::initDockWindows ()
   timeLineDockableWindow->setResizeEnabled (true);
   timeLineDockableWindow->setHorizontalStretchable (true);
   timeLineDockableWindow->setVerticalStretchable (true);
-  timeLineDockableWindow->setCaption ("Time Line");
+  q3SetCaption(timeLineDockableWindow, "Time Line");
 
   tl = new CTimeLine (timeLineDockableWindow, "Time Line");
   //tl->removeEventFilter(timeLineDockableWindow);
@@ -2031,7 +2050,7 @@ void F4lmApp::initDockWindows ()
   timeLineDockableWindow->resize (width (), 150);
   timeLineDockableWindow->setWidget (tl);
 
-  addDockWindow (timeLineDockableWindow, Qt::Top);
+  addDockWidget (Qt::TopDockWidgetArea, timeLineDockableWindow);
 
   QDockArea * areaFotTimeLine = timeLineDockableWindow->area ();
 
@@ -2043,7 +2062,7 @@ void F4lmApp::initDockWindows ()
   toolsDockableWindow->setResizeEnabled (true);
   toolsDockableWindow->setHorizontalStretchable (true);
   toolsDockableWindow->setVerticalStretchable (true);
-  toolsDockableWindow->setCaption ("Tools");
+  q3SetCaption(toolsDockableWindow, "Tools");
 
   tools = new CTools (toolsDockableWindow, "Tools", 0, this);
   /*tools->setMinimumHeight(300);
@@ -2056,11 +2075,11 @@ void F4lmApp::initDockWindows ()
      dtools->setMinimumWidth(60); */
   toolsDockableWindow->setWidget (tools);
 
-  addDockWindow (toolsDockableWindow, Qt::Left);
+  addDockWidget (Qt::LeftDockWidgetArea, toolsDockableWindow);
 
   colorSwatchesDockableWindow = new QDockWindow (QDockWindow::InDock, this);
   //colorSwatche->setResizeEnabled(true);
-  colorSwatchesDockableWindow->setCaption ("Color Swatches");
+  q3SetCaption(colorSwatchesDockableWindow, "Color Swatches");
   pColorSwatches =
     new CColorSwatches (colorSwatchesDockableWindow, "color_swatches", this);
 
@@ -2072,11 +2091,11 @@ void F4lmApp::initDockWindows ()
 
   colorSwatchesDockableWindow->setWidget (pColorSwatches);
 
-  addDockWindow (colorSwatchesDockableWindow, Qt::Right);
+  addDockWidget (Qt::RightDockWidgetArea, colorSwatchesDockableWindow);
 
   colorDialogDockableWindow = new QDockWindow (QDockWindow::InDock, this);
   colorDialogDockableWindow->setResizeEnabled (true);
-  colorDialogDockableWindow->setCaption ("Color Mixer");
+  q3SetCaption(colorDialogDockableWindow, "Color Mixer");
 
   CColorDialog * colordia = new CColorDialog (colorDialogDockableWindow, "Color Mixer", this);
 
@@ -2091,10 +2110,11 @@ void F4lmApp::initDockWindows ()
   colorDialogDockableWindow->setWidget (colordia);
 
 
-  addDockWindow (colorDialogDockableWindow, Qt::Right);
+  addDockWidget (Qt::RightDockWidgetArea, colorDialogDockableWindow);
+  splitDockWidget (colorSwatchesDockableWindow, colorDialogDockableWindow, Qt::Vertical);
   propertiesDockableWindow = new QDockWindow (QDockWindow::InDock, this);
   propertiesDockableWindow->setResizeEnabled (true);
-  propertiesDockableWindow->setCaption ("Properties");
+  q3SetCaption(propertiesDockableWindow, "Properties");
 
   properties = new CProperties (propertiesDockableWindow, "Properties");
   properties->setMinimumHeight (80);
@@ -2108,7 +2128,7 @@ void F4lmApp::initDockWindows ()
   //properties->resize(80,100);
   propertiesDockableWindow->setWidget (properties);
 
-  addDockWindow (propertiesDockableWindow, Qt::Bottom);
+  addDockWidget (Qt::BottomDockWidgetArea, propertiesDockableWindow);
 }
 
 /** sets the ID of default object for drawing. */
@@ -2127,17 +2147,17 @@ void F4lmApp::setDefObjCOLOR (QColor color)
   if (m)
     m->defObjCOLOR = color;
 
-  if (tools->StrokeColor->isOn ())
+  if (tools->StrokeColor->isChecked ())
   {
     tools->strokpix.fill (color);
-    tools->StrokeColor->setIconSet (QIconSet (tools->strokpix));
+    tools->StrokeColor->setIcon (QIconSet (tools->strokpix));
   }
 
-  if (tools->FillColor->isOn ())
+  if (tools->FillColor->isChecked ())
   {
     //tools->FillColor->setOn(false);
     tools->fillpix.fill (color);
-    tools->FillColor->setIconSet (QIconSet (tools->fillpix));
+    tools->FillColor->setIcon (QIconSet (tools->fillpix));
   }
 }
 
@@ -2146,6 +2166,7 @@ F4lmView * F4lmApp::slotCurrentView ()
   F4lmView * m = (F4lmView *) pWorkspace->activeWindow ();
   if (m)
     return m;
+  return 0;
 }
 
 void F4lmApp::slotWindowProperities ()
@@ -2178,13 +2199,13 @@ void F4lmApp::fillTheStringTable ()
   //stringTable[int]=QString
 
   QFile f ("string_table.txt");
-  if (!f.open (IO_ReadOnly))
+  if (!f.open (QIODevice::ReadOnly))
     return;
   QTextStream t (&f);
 
   int i;
   QString s, temp;
-  while (!t.eof ())
+  while (!t.atEnd ())
   {
     //t>>i>>s;
     s = t.readLine ();
@@ -2500,24 +2521,12 @@ void F4lmApp::slotfileSaveAsTemplate () {}
 void F4lmApp::slotfileRevert () {}
 void F4lmApp::slotfileImport ()
 {
+  QString fileName1 = QFileDialog::getOpenFileName (this);
+  if (fileName1.isEmpty () || !slotCurrentView ())
+    return;
 
-  CFilePreview * p = new CFilePreview;
-  QFileDialog * fd = new QFileDialog (this);
-
-  fd->setContentsPreviewEnabled (TRUE);
-  fd->setContentsPreview (p, p);
-  fd->setPreviewMode (QFileDialog::Contents);
-
-  QString fileName1;
-
-  if (fd->exec () == QDialog::Accepted)
-    fileName1 = fd->selectedFile ();
-
-  //QString choosen = fd->selectedFile();
-
-  //qDebug(fileName1);
   QCanvasSprite * s1 =
-    new QCanvasSprite (new QCanvasPixmapArray ((const QString) fileName1),
+    new QCanvasSprite (new QCanvasPixmapArray (fileName1),
                        slotCurrentView ()->canvasViewer->canvas ());
 
   s1->moveBy (slotCurrentView ()->canvasViewer->canvas ()->width () / 2,
@@ -2601,7 +2610,7 @@ void CFilePreview::previewUrl (const QUrl & u)
     setText ("This is not a image");
   else
   {
-    pix.resize (width (), height ());
+    pix = pix.scaled (width (), height ());
     setPixmap (pix);
   }
 }

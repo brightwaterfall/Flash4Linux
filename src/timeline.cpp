@@ -2,7 +2,7 @@
 ** 
 **
 ** Created: Mon Jun 9 05:33:27 2003
-**     copyright            : (C) 2003 by ˆzkan pakdil
+**     copyright            : (C) 2003 by ùzkan pakdil
 **    email                : ozkanpakdil@users.sourceforge.net
 **
 ** 
@@ -36,7 +36,7 @@
 #include <qtooltip.h>
 #include <qwhatsthis.h>
 #include <qpainter.h>
-//#include <iostream.h>
+//#include <iostream>
 #include <qlistview.h>
 #include <qimage.h>
 
@@ -56,7 +56,7 @@
 *  name 'timeLineTable' and widget flags set to 'f'.
 */
 CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
-        :QWidget (parent, name, modal)
+        : QWidget(parent)
 {
     layerFrames = new QPtrList < CTimeLineDataStructure >;
     CTimeLineDataStructure * node = new CTimeLineDataStructure (1);
@@ -64,26 +64,33 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
     node->frames->append (tabnode);
     layerFrames->append (node);
 
-    dad = (F4lmApp *) parentWidget ()->parent ()->parent ();
+    QWidget *walk = parentWidget();
+    dad = 0;
+    while (walk) {
+        dad = qobject_cast<F4lmApp *>(walk);
+        if (dad)
+            break;
+        walk = walk->parentWidget();
+    }
 
     if (!name)
-        setName ("TimeLine");
+        setObjectName ("TimeLine");
 
         //resize( 600, 480 );
     tableColNum = 560;
 
-    setCaption (trUtf8 ("TimeLine"));
+    q3SetCaption(this, tr ("TimeLine"));
     layerNum = 1;
     layerMaxColNum = 1;
-    QVBoxLayout * topLayout = new QVBoxLayout (this);
+    QVBoxLayout * topLayout = q3VBoxOn(this, 0, 2, 0);
 
-    Splitter1 = new QSplitter (this, "Splitter1");
-    Splitter1->setOrientation (QSplitter::Horizontal);
+    Splitter1 = q3Splitter(this, "Splitter1");
+    Splitter1->setOrientation (Qt::Horizontal);
     
-	QWidget * privateLayoutWidget = new QWidget (Splitter1, "Layout2");
+	QWidget * privateLayoutWidget = q3Widget(Splitter1, "Layout2");
 
-    Layout2 = new QVBoxLayout (privateLayoutWidget, 0, 0, "Layout2");
-    Splitter1->setResizeMode (privateLayoutWidget, QSplitter::KeepSize);
+    Layout2 = q3VBoxOn(privateLayoutWidget, 0, 0, "Layout2");
+    Splitter1->setStretchFactor(Splitter1->indexOf(privateLayoutWidget), 0);
     timeLineLeftTopLabel =new CLabel (privateLayoutWidget, "timeLineLeftTopLabel");
     timeLineLeftTopLabel->setFixedHeight (23);
     Layout2->addWidget (timeLineLeftTopLabel);
@@ -93,9 +100,9 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
     
 	int i, j;
     QPixmap kare;		//(16,16,8);
-    kare.resize (14, 14);
+    kare = QPixmap(14, 14);
     kare.fill (Qt::red);
-    QImage _kare = kare.convertToImage ();
+    QImage _kare = kare.toImage ();
 
     for (i = 0; i < 14; i++)
         for (j = 0; j < 14; j++) {
@@ -105,7 +112,7 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
                 _kare.setPixel (i, j, qRgb (0, 0, 0));
         }
 
-    kare.convertFromImage (_kare, QPixmap::Color);
+    kare = QPixmap::fromImage(_kare, Qt::AutoColor);
 
     QPixmap _0 = QPixmap ((const char **) layer_pic_xpm);
     QPixmap _1 = QPixmap ((const char **) written_pic_xpm);
@@ -142,36 +149,36 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
         //timeLineLeftButtonGroup->setMaximumSize( QSize( 120, 22 ) );
     timeLineLeftButtonGroup->setLineWidth (0);
     timeLineLeftButtonGroup->setFixedSize (190, 20);
-    timeLineLeftButtonGroup->setTitle (trUtf8 (""));
+    timeLineLeftButtonGroup->setTitle (tr (""));
 
-    NewLayer = new QToolButton (timeLineLeftButtonGroup, "NewLayer");
+    NewLayer = q3ToolButton(timeLineLeftButtonGroup, "NewLayer");
     NewLayer->setGeometry (QRect (2, 2, 19, 17));
-    NewLayer->setIconSet (QIconSet(QPixmap ((const char **) new_layer_on_timeline_xpm)));
-    NewLayer->setTextLabel ("Insert Layer");
+    NewLayer->setIcon (QIconSet(QPixmap ((const char **) new_layer_on_timeline_xpm)));
+    NewLayer->setToolTip ("Insert Layer");
 
         //NewLayer->adjustSize();
     connect (NewLayer, SIGNAL (clicked ()), this, SLOT (slotNewLayer ()));
 
-    NewWayLayer = new QToolButton (timeLineLeftButtonGroup, "NewWayLayer");
+    NewWayLayer = q3ToolButton(timeLineLeftButtonGroup, "NewWayLayer");
     NewWayLayer->setGeometry (QRect (22, 2, 19, 17));
-    NewWayLayer->setIconSet (QIconSet (QPixmap ((const char **) motion_guide_xpm)));
-    NewWayLayer->setTextLabel (trUtf8 ("Add motion Guide"));
+    NewWayLayer->setIcon (QIconSet (QPixmap ((const char **) motion_guide_xpm)));
+    NewWayLayer->setToolTip (tr ("Add motion Guide"));
 
-    NewLayerFolder = new QToolButton (timeLineLeftButtonGroup, "NewLayerFolder");
+    NewLayerFolder = q3ToolButton(timeLineLeftButtonGroup, "NewLayerFolder");
     NewLayerFolder->setGeometry (QRect (42, 2, 19, 17));
-    NewLayerFolder->setIconSet (QIconSet (QPixmap ((const char **) layer_folder_xpm)));
-    NewLayerFolder->setTextLabel (trUtf8 ("Insert Layer Folder"));
+    NewLayerFolder->setIcon (QIconSet (QPixmap ((const char **) layer_folder_xpm)));
+    NewLayerFolder->setToolTip (tr ("Insert Layer Folder"));
 
-    DeleteLayer = new QToolButton (timeLineLeftButtonGroup, "DeleteLayer");
+    DeleteLayer = q3ToolButton(timeLineLeftButtonGroup, "DeleteLayer");
     DeleteLayer->setGeometry (QRect (92, 2, 19, 17));
-    DeleteLayer->setIconSet (QIconSet (QPixmap ((const char **) delete_layer_xpm)));
-    DeleteLayer->setTextLabel (trUtf8 ("Delete Layer"));
+    DeleteLayer->setIcon (QIconSet (QPixmap ((const char **) delete_layer_xpm)));
+    DeleteLayer->setToolTip (tr ("Delete Layer"));
 
     Layout2->addWidget (timeLineLeftButtonGroup);
 
-    QWidget * privateLayoutWidget_2 = new QWidget (Splitter1, "Layout3");
+    QWidget * privateLayoutWidget_2 = q3Widget(Splitter1, "Layout3");
 
-    Layout3 = new QVBoxLayout (privateLayoutWidget_2, 0, 0, "Layout3");
+    Layout3 = q3VBoxOn(privateLayoutWidget_2, 0, 0, "Layout3");
 
     baseforleftlabel = new CBase (privateLayoutWidget_2, "baseforleftlabel");
 
@@ -179,21 +186,21 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
     timeLineRightTopLabel->setMinimumHeight (20);
     timeLineRightTopLabel->resize (tableColNum * 8, 20);
 
-    QHBoxLayout * Layout9 = new QHBoxLayout (Layout3);
+    QHBoxLayout * Layout9 = q3HBoxIn(Layout3);
     Layout9->addWidget (baseforleftlabel);
 
     baseforleftlabel->addChild (timeLineRightTopLabel);
-    baseforleftlabel->setVScrollBarMode (QScrollView::AlwaysOff);
-    baseforleftlabel->setHScrollBarMode (QScrollView::AlwaysOff);
+    baseforleftlabel->setVScrollBarMode (Qt::ScrollBarAlwaysOff);
+    baseforleftlabel->setHScrollBarMode (Qt::ScrollBarAlwaysOff);
     baseforleftlabel->setFixedHeight (26);
 
     connect (timeLineRightTopLabel, SIGNAL (valueChanged ()), this,SLOT (slotLabelclick ()));
 
-    QHBoxLayout * Layout8 = new QHBoxLayout (Layout3);
-    VScrollBar1 = new QScrollBar (privateLayoutWidget_2, "Scroll bar V");
-    VScrollBar1->setOrientation (QScrollBar::Vertical);
-    VScrollBar1->setMinValue (0);
-    VScrollBar1->setMaxValue (layerNum + 1);
+    QHBoxLayout * Layout8 = q3HBoxIn(Layout3);
+    VScrollBar1 = q3ScrollBar(privateLayoutWidget_2, "Scroll bar V");
+    VScrollBar1->setOrientation (Qt::Vertical);
+    VScrollBar1->setMinimum (0);
+    VScrollBar1->setMaximum (layerNum + 1);
 
     connect (VScrollBar1, SIGNAL (sliderMoved (int)), this,SLOT (slotTableVscrollmove (int)));
 
@@ -217,28 +224,28 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
 
     timeLineRightButtonGroup = new QButtonGroup (privateLayoutWidget_2, "timeLineRightButtonGroup");
     timeLineRightButtonGroup->setLineWidth (0);
-    timeLineRightButtonGroup->setTitle (trUtf8 (""));
+    timeLineRightButtonGroup->setTitle (tr (""));
 
-    QHBoxLayout * Layout4 = new QHBoxLayout (timeLineRightButtonGroup);
+    QHBoxLayout * Layout4 = q3HBoxOn(timeLineRightButtonGroup, 0, 2, 0);
 
-    ToolButton6 = new QToolButton (timeLineRightButtonGroup, "ToolButton6");
+    ToolButton6 = q3ToolButton(timeLineRightButtonGroup, "ToolButton6");
     ToolButton6->setGeometry (QRect (0, 0, 21, 21));
     ToolButton6->setFixedSize (21, 21);
-    ToolButton6->setText (trUtf8 ("..."));
+    ToolButton6->setText (tr ("..."));
 
     Layout4->addWidget (ToolButton6);
 
-    ToolButton7 = new QToolButton (timeLineRightButtonGroup, "ToolButton7");
+    ToolButton7 = q3ToolButton(timeLineRightButtonGroup, "ToolButton7");
     ToolButton7->setGeometry (QRect (20, 0, 21, 21));
     ToolButton7->setFixedSize (21, 21);
-    ToolButton7->setText (trUtf8 ("..."));
+    ToolButton7->setText (tr ("..."));
 
     Layout4->addWidget (ToolButton7);
 
-    ToolButton8 = new QToolButton (timeLineRightButtonGroup, "ToolButton8");
+    ToolButton8 = q3ToolButton(timeLineRightButtonGroup, "ToolButton8");
     ToolButton8->setGeometry (QRect (40, 0, 21, 21));
     ToolButton8->setFixedSize (21, 21);
-    ToolButton8->setText (trUtf8 ("..."));
+    ToolButton8->setText (tr ("..."));
 
     Layout4->addWidget (ToolButton8);
 
@@ -254,20 +261,20 @@ CTimeLine::CTimeLine (QWidget * parent, const char *name, bool modal,WFlags fl)
     totalTimeLabel->setFixedSize (21, 21);
     Layout4->addWidget (totalTimeLabel);
     
-	HScrollBar1 = new QScrollBar (timeLineRightButtonGroup, "Scroll bar");
-    HScrollBar1->setOrientation (QScrollBar::Horizontal);
+	HScrollBar1 = q3ScrollBar(timeLineRightButtonGroup, "Scroll bar");
+    HScrollBar1->setOrientation (Qt::Horizontal);
     HScrollBar1->setMinimumWidth (width () - 50);
 
     connect (HScrollBar1, SIGNAL (valueChanged (int)), this, SLOT (slotTableHscrollmove (int)));
 
-    HScrollBar1->setMinValue (0);
-    HScrollBar1->setMaxValue (tableColNum * 10);
+    HScrollBar1->setMinimum (0);
+    HScrollBar1->setMaximum (tableColNum * 10);
 
     Layout4->addWidget (HScrollBar1);
     Layout3->addWidget (timeLineRightButtonGroup);
     topLayout->addWidget (Splitter1);
 
-    QToolButton * timeLineRightTopLabel_side = new QToolButton (privateLayoutWidget_2, "timeLineRightTopLabel");
+    QToolButton * timeLineRightTopLabel_side = q3ToolButton(privateLayoutWidget_2, "timeLineRightTopLabel");
 
     VScrollBar1->show ();
     Layout9->addWidget (timeLineRightTopLabel_side);
@@ -319,7 +326,7 @@ void CTimeLine::slotNewLayer ()
         // timeLineListbox->insertItem( item );
         //timeLineListbox->insertItem(
         QPixmap kare;		//(16,16,8);
-    kare.resize (14, 14);
+    kare = QPixmap(14, 14);
 
     switch (layerNum % 5) {
     case 0:
@@ -339,7 +346,7 @@ void CTimeLine::slotNewLayer ()
         break;
     }
 
-    QImage _kare = kare.convertToImage ();
+    QImage _kare = kare.toImage ();
 
     for (i = 0; i < 14; i++)
         for (j = 0; j < 14; j++) {
@@ -349,7 +356,7 @@ void CTimeLine::slotNewLayer ()
                 _kare.setPixel (i, j, qRgb (0, 0, 0));
         }
 
-    kare.convertFromImage (_kare, QPixmap::Color);
+    kare = QPixmap::fromImage(_kare, Qt::AutoColor);
 
     QPixmap _0 = QPixmap ((const char **) layer_pic_xpm);
     QPixmap _1 = QPixmap ((const char **) dot_xpm);
@@ -360,7 +367,7 @@ void CTimeLine::slotNewLayer ()
     it->setPixmap (4, _1);
     it->setPixmap (5, kare);
         //it->setHeight(20);
-    VScrollBar1->setMaxValue (layerNum);
+    VScrollBar1->setMaximum (layerNum);
 
     dad->slotCurrentView ()->slotNewLayer ();
 

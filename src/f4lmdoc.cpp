@@ -21,7 +21,7 @@
 #include <qwidget.h>
 #include <qmessagebox.h>
 #include <qfiledialog.h>
-#include <iostream.h>
+#include <iostream>
 #include <qfiledialog.h>
 #include <qprocess.h> // reading ttf files
 #include <qimage.h>
@@ -42,8 +42,8 @@ using namespace std;
 
 F4lmDoc::F4lmDoc ()
 {
-  setName ("F4lmDoc");
-  pViewList = new QList < F4lmView >;
+  setObjectName ("F4lmDoc");
+  pViewList = new QPtrList < F4lmView >;
   pLayerList = new QPtrList < CLayer >;
   pViewList->setAutoDelete (false);
 }
@@ -75,14 +75,14 @@ void F4lmDoc::changedViewList ()
   if ((int) pViewList->count () == 1)
   {
     w = pViewList->first ();
-    w->setCaption (m_title);
+    q3SetCaption(w, m_title);
   }
   else
   {
     int i;
     for (i = 1, w = pViewList->first (); w != 0;
          i++, w = pViewList->next ())
-      w->setCaption (QString (m_title + ":%1").arg (i));
+      q3SetCaption(w, QString (m_title + ":%1").arg (i));
   }
 }
 
@@ -151,7 +151,7 @@ bool F4lmDoc::newDocument ()
 bool F4lmDoc::openDocument (const QString & filename, const char *format /*=0*/ )
 {
   QFile f (filename);
-  if (!f.open (IO_ReadOnly))
+  if (!f.open (QIODevice::ReadOnly))
     return false;
   /////////////////////////////////////////////////
   // TODO: Add your document opening code here
@@ -181,7 +181,7 @@ bool F4lmDoc::saveDocument (const QString & filename, const char *format /*=0*/ 
   			}*/
 
   QFile f (filename);
-  if (!f.open (IO_WriteOnly))
+  if (!f.open (QIODevice::WriteOnly))
     return false;
 
   /////////////////////////////////////////////////
@@ -216,13 +216,13 @@ bool F4lmDoc::canCloseFrame (F4lmView * pFrame)
     switch (QMessageBox::
             information (pFrame, title (),
                          tr ("The current file has been modified.\n"
-                             "Do you want to save it?"), QMessageBox::Yes,
-                         QMessageBox::No, QMessageBox::Cancel))
+                             "Do you want to save it?"),
+                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel))
     {
     case QMessageBox::Yes:
       if (title ().contains (tr ("Untitled")))
       {
-        saveName = QFileDialog::getSaveFileName (0, 0, pFrame);
+        saveName = QFileDialog::getSaveFileName (pFrame);
         if (saveName.isEmpty ())
           return false;
       }
@@ -234,13 +234,16 @@ bool F4lmDoc::canCloseFrame (F4lmView * pFrame)
         switch (QMessageBox::
                 critical (pFrame, tr ("I/O Error !"),
                           tr ("Could not save the current document !\n"
-                              "Close anyway ?"), QMessageBox::Yes,
-                          QMessageBox::No))
+                              "Close anyway ?"),
+                          QMessageBox::Yes | QMessageBox::No))
         {
         case QMessageBox::Yes:
           ret = true;
         case QMessageBox::No:
           ret = false;
+          break;
+        default:
+          break;
         }
       }
       else
@@ -457,25 +460,25 @@ void F4lmDoc::slotfileExportMovie()
         {
           QCanvasSprite *sprite=(QCanvasSprite*)(*it);
           QByteArray ba;
-          QBuffer buffer( ba );
-          buffer.open( IO_WriteOnly );
-sprite->image()->convertToImage().save( &buffer, "BMP" ); // writes image into ba in BMP format
+          QBuffer buffer(&ba);
+          buffer.open(QIODevice::WriteOnly);
+          sprite->image()->save(&buffer, "BMP"); // writes image into ba in BMP format
           FSImageConstructor* imageGenerator = ImageConstructor();
           int status = TransformUtil::OK;
 int boyutu=ba.size();
 qDebug("%d",boyutu);
           //if ((status = imageGenerator->setImageFromFile(imageFile.c_str())) != TransformUtil::OK)(  const unsigned char *)
-          //if ((status = imageGenerator->setImage(sprite->image()->convertToImage ().bits(),sizeof(sprite->image()->convertToImage ().bits()))) != TransformUtil::OK)
+          //if ((status = imageGenerator->setImage(sprite->image()->toImage ().bits(),sizeof(sprite->image()->toImage ().bits()))) != TransformUtil::OK)
 if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().data(),sizeof(char)*boyutu)) != TransformUtil::OK)
           {
             switch (status)
             {
             case TransformUtil::FileNotFound:
-              cout << "Could not find image" << endl; break;
+              std::cout << "Could not find image" << std::endl; break;
             case TransformUtil::ReadError:
-              cout << "Could not read image" << endl; break;
+              std::cout << "Could not read image" << std::endl; break;
             case TransformUtil::FormatError:
-              cout << "Could not read image" << endl; break;
+              std::cout << "Could not read image" << std::endl; break;
             }
           }
           if (status == TransformUtil::OK)
@@ -525,36 +528,33 @@ if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().dat
           if(canvasText->animationX>=i)continue;
           FSTextConstructor* textGenerator = TextConstructor();
           int status = TransformUtil::OK;
-          proc = new QProcess();
-          proc->addArgument( "locate");
-          proc->addArgument("*.ttf");
-          QString buf;
-          //proc->launch(buf);
-          connect( proc, SIGNAL(readyReadStdout()),
+          proc = new QProcess(this);
+          connect( proc, SIGNAL(readyReadStandardOutput()),
                    this, SLOT(readFromStdout()) );
 
-          if ( !proc->start() )
+          proc->start("locate", QStringList() << "*.ttf");
+          if ( !proc->waitForStarted() )
           {
             // error handling
             qDebug("process could not started.");
             return;
           }
-          while(proc->isRunning()==TRUE){qApp->processEvents(5000);}
+          while(proc->state()!=QProcess::NotRunning){qApp->processEvents(QEventLoop::AllEvents, 5000);}
           /*QByteArray bufByte=proc->readStdout();
           if(!proc->normalExit())
           	qDebug("%d",proc->exitStatus ());
           QString sttir(bufByte);
           QStringList sittirList;*/
           QString ttfFileName="";
-          qDebug(canvasText->font().family().stripWhiteSpace ());
-          procOut = procOut.split("\n",procOut.join("\n"));
+          qDebug("%s", qPrintable(canvasText->font().family().trimmed ()));
+          procOut = procOut.join("\n").split("\n", QString::SkipEmptyParts);
           qDebug("%d",procOut.count());
           for(int ttfIndis=0;ttfIndis<procOut.count();ttfIndis++)
           {
             if(procOut[ttfIndis].right(4)==".ttf")
             {
               //qDebug(procOut[ttfIndis]);
-              if(procOut[ttfIndis].contains(canvasText->font().family().stripWhiteSpace (),false))
+              if(procOut[ttfIndis].contains(canvasText->font().family().trimmed (), Qt::CaseInsensitive))
               {
                 //qDebug("burasi ana yer");
                 ttfFileName=procOut[ttfIndis];
@@ -575,7 +575,7 @@ if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().dat
               {
                 //qDebug(procOut[ttfIndis]);
                 //TODO:when you done option dialog for default font change the "arial" from down line.
-                if(procOut[ttfIndis].contains("arial",false))
+                if(procOut[ttfIndis].contains("arial", Qt::CaseInsensitive))
                 {
                   ttfFileName=procOut[ttfIndis];
                   break;
@@ -583,18 +583,19 @@ if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().dat
               }
             }
           }
-          qDebug(ttfFileName);
+          qDebug("%s", qPrintable(ttfFileName));
 
-          if ((status = textGenerator->setFontFromFile(ttfFileName)) != TransformUtil::OK)
+          QByteArray ttfFileBytes = ttfFileName.toLatin1();
+          if ((status = textGenerator->setFontFromFile(ttfFileBytes.constData())) != TransformUtil::OK)
           {
             switch (status)
             {
             case TransformUtil::FileNotFound:
-              cout << "Could not find font file" << endl; break;
+              std::cout << "Could not find font file" << std::endl; break;
             case TransformUtil::ReadError:
-              cout << "Could not read font file" << endl; break;
+              std::cout << "Could not read font file" << std::endl; break;
             case TransformUtil::FormatError:
-              cout << "Could not read font file" << endl; break;
+              std::cout << "Could not read font file" << std::endl; break;
             }
           }
           int layer = 0;                // Starting layer for objects in the display list.
@@ -633,7 +634,8 @@ if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().dat
           */
           //FSDefineText2* text = textGenerator->defineWideTextBlock(movie.newIdentifier(),
           //	(const wchar_t **)lines, 32, lineSpacing);
-          FSDefineText2* text = textGenerator->defineText(movie.newIdentifier(),canvasText->text());
+          QByteArray canvasTextBytes = canvasText->text().toLatin1();
+          FSDefineText2* text = textGenerator->defineText(movie.newIdentifier(), canvasTextBytes.constData());
 
           FSDefineFont2* font = textGenerator->defineFont();
 
@@ -658,7 +660,8 @@ if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().dat
   try
   {
     QString fileName = QFileDialog::getSaveFileName( );
-    movie.encodeToFile(fileName);
+    QByteArray fileNameBytes = fileName.toLatin1();
+    movie.encodeToFile(fileNameBytes.constData());
 
   }
   catch (FSException e)
@@ -673,7 +676,7 @@ if ((status = imageGenerator->setImage((const unsigned char*)buffer.buffer().dat
      * exception was thrown so handling them all in the same way is sufficient
      * for the purposes of the examples.
      */
-    cerr << e.what();
+    std::cerr << e.what();
   }
 }
 
@@ -682,6 +685,6 @@ void F4lmDoc::readFromStdout()
 {
   // Read and process the data.
   // Bear in mind that the data might be output in chunks.
-  procOut.append( proc->readStdout() );
+  procOut += QString::fromLocal8Bit(proc->readAllStandardOutput()).split('\n', QString::SkipEmptyParts);
   //qDebug(procOut.last());
 }

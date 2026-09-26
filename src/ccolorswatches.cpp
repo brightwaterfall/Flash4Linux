@@ -2,7 +2,7 @@
               ccolorswatches.cpp  -  description
                  -------------------
     begin                : Tue Jul 1 2003
-    copyright            : (C) 2003 by özkan pakdil
+    copyright            : (C) 2003 by zkan pakdil
     email                : ozkanpakdil@users.sourceforge.net
  ***************************************************************************/
 
@@ -23,10 +23,10 @@
 #include "cursor/eye_dropper_tool.xpm"
 
 CColorSwatches::CColorSwatches (QWidget * parent, const char *name,F4lmApp * rp)
-:QWidget (parent, name)
+: QWidget(parent)
 {
     realp = rp;
-    setBackgroundColor (QColor (0, 0, 0));
+    q3SetPaletteBackground(this, QColor (0, 0, 0));
     QPixmap mcursor = QPixmap ((const char **) eye_dropper_tool_xpm);
     setCursor (QCursor (mcursor, 1, 15));
     CSmalColorBoxes * renkDizisi[21][12];
@@ -40,36 +40,36 @@ CColorSwatches::CColorSwatches (QWidget * parent, const char *name,F4lmApp * rp)
             renkDizisi[i][j]->setMaximumSize (9, 9);
                         //renkDizisi[i][j]->setBackgroundColor(QColor(rand()%32*8,rand()%32*8,rand()%32*8));
             if (i == 0 && j <= 5)
-                renkDizisi[i][j]->setBackgroundColor (QColor ((j * 51), (j * 51), (j * 51)));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor ((j * 51), (j * 51), (j * 51)));
             if (i == 0 && j == 6)
-                renkDizisi[i][j]->setBackgroundColor (QColor (255, 0, 0));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (255, 0, 0));
             if (i == 0 && j == 7)
-                renkDizisi[i][j]->setBackgroundColor (QColor (0, 255, 0));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (0, 255, 0));
             if (i == 0 && j == 8)
-                renkDizisi[i][j]->setBackgroundColor (QColor (0, 0, 255));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (0, 0, 255));
             if (i == 0 && j == 9)
-                renkDizisi[i][j]->setBackgroundColor (QColor (255, 255, 0));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (255, 255, 0));
             if (i == 0 && j == 10)
-                renkDizisi[i][j]->setBackgroundColor (QColor (0, 255, 255));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (0, 255, 255));
             if (i == 0 && j == 11)
-                renkDizisi[i][j]->setBackgroundColor (QColor (255, 0, 255));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (255, 0, 255));
             if (i == 1)
-                renkDizisi[i][j]->setBackgroundColor (QColor (0, 0, 0));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (0, 0, 0));
             if (i == 20)
-                renkDizisi[i][j]->setBackgroundColor (QColor (0, 0, 0));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (0, 0, 0));
                         //if(i==2 && j<6)renkDizisi[i][j]->setBackgroundColor(QColor(0,0,(j*51)));
             if (i >= 2 && i <= 7 && j >= 0 && j <= 5)
-                renkDizisi[i][j]->setBackgroundColor (QColor (0, ((i - 2) * 51), j * 51));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (0, ((i - 2) * 51), j * 51));
             if (i >= 2 && i <= 7 && j >= 6 && j <= 11)
-                renkDizisi[i][j]->setBackgroundColor (QColor (153, ((i - 2) * 51), (j - 6) * 51));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (153, ((i - 2) * 51), (j - 6) * 51));
             if (i >= 8 && i <= 13 && j >= 0 && j <= 5)
-                renkDizisi[i][j]->setBackgroundColor (QColor (51, ((i - 8) * 51), j * 51));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (51, ((i - 8) * 51), j * 51));
             if (i >= 8 && i <= 13 && j >= 6 && j <= 11)
-                renkDizisi[i][j]->setBackgroundColor (QColor (204, ((i - 8) * 51), (j - 6) * 51));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (204, ((i - 8) * 51), (j - 6) * 51));
             if (i >= 14 && i <= 19 && j >= 0 && j <= 5)
-                renkDizisi[i][j]->setBackgroundColor (QColor (102, ((i - 14) * 51), j * 51));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (102, ((i - 14) * 51), j * 51));
             if (i >= 14 && i <= 19 && j >= 6 && j <= 11)
-                renkDizisi[i][j]->setBackgroundColor (QColor (255, ((i - 14) * 51), (j - 6) * 51));
+                q3SetPaletteBackground(renkDizisi[i][j], QColor (255, ((i - 14) * 51), (j - 6) * 51));
             
 			renkDizisi[i][j]->show ();
                         //topLayout->addWidget(renkDizisi[i][j]);

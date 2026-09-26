@@ -2,7 +2,7 @@
               f4lmview.cpp  -  description
                  -------------------
     begin                : Sat Jun  7 02:29:46 EEST 2003
-    copyright            : (C) 2003 by ˆzkan pakdil
+    copyright            : (C) 2003 by ùzkan pakdil
     email                : ozkanpakdil@users.sourceforge.net
  ***************************************************************************/
 
@@ -18,6 +18,7 @@
 
 // include files for Qt
 #include <qprinter.h>
+#include <qprintdialog.h>
 #include <qpainter.h>
 #include <qslider.h>
 #include <qpainter.h>
@@ -36,17 +37,19 @@
 
 
 F4lmView::F4lmView (F4lmDoc * pDoc, QWidget * parent, const char *name, int wflags)
-    :QWidget (parent, name, wflags) {
-    setName ("F4lmView");
+    : QWidget (parent) {
+    setObjectName (name ? name : "F4lmView");
+    if (wflags & WDestructiveClose)
+        setAttribute (Qt::WA_DeleteOnClose);
     dad = (F4lmApp *) parentWidget ()->parent ()->parent ();
     doc = pDoc;
     resize (700, 600);
-    setIcon (QPixmap ((const char **) main_doc_ico_xpm));
+    setWindowIcon (QPixmap ((const char **) main_doc_ico_xpm));
     layerNum = 1;
     defSceneHeight = 440;
     defSceneWidth = 550;
     defSceneRect = QRect (600, 600, defSceneWidth, defSceneHeight);
-    QVBoxLayout * topLayout = new QVBoxLayout (this);
+    QVBoxLayout * topLayout = q3VBoxOn (this, 0, 2, 0);
     
 	CLayer * layer1 = new CLayer (this, "layer 1");
     mainCanvas = new CCanvas (this, "mc");
@@ -90,7 +93,8 @@ void F4lmView::update (F4lmView * pSender) {
 }
 
 void F4lmView::print (QPrinter * pPrinter) {
-    if (pPrinter->setup (this)) {
+    QPrintDialog dialog (pPrinter, this);
+    if (dialog.exec () == QDialog::Accepted) {
     QPainter p;
     p.begin (pPrinter);
         ///////////////////////////////
@@ -193,7 +197,7 @@ int z=-1*tmpListViewItem->m_Row;
 }
 
 void F4lmView::slotShowCanvas (int row, int col) {
-////////burada matrixdeki bˆlgede secili yerin show edilmesi saglanacak.
+////////burada matrixdeki bùlgede secili yerin show edilmesi saglanacak.
 /////// bu durumda insert frame de matrix degisiklikleri yapilacak.
     //qDebug("row:%d col:%d listNum:%d",row,col);
 /*    CLayer * l;
