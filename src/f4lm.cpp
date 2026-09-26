@@ -25,6 +25,8 @@
 #include <qdockarea.h>
 #include <qmap.h>
 #include <qtextstream.h>
+#include <qlayout.h>
+#include <qlabel.h>
 #include <qfocusdata.h>
 //#include <iostream>
 
@@ -1127,12 +1129,12 @@ void F4lmApp::initActions ()
   windowCascade = q3NewAction (tr ("Cascade"), tr ("&Cascade"), 0, this);
   windowCascade->setStatusTip (tr ("Cascades all windows"));
   windowCascade->setWhatsThis (tr ("Cascade\n\nCascades all windows"));
-  connect (windowCascade, SIGNAL (triggered ()), pWorkspace, SLOT (cascade ()));
+  connect (windowCascade, SIGNAL (triggered ()), pWorkspace, SLOT (cascadeSubWindows ()));
 
   windowTile = q3NewAction (tr ("Tile"), tr ("&Tile"), 0, this);
   windowTile->setStatusTip (tr ("Tiles all windows"));
   windowTile->setWhatsThis (tr ("Tile\n\nTiles all windows"));
-  connect (windowTile, SIGNAL (triggered ()), pWorkspace, SLOT (tile ()));
+  connect (windowTile, SIGNAL (triggered ()), pWorkspace, SLOT (tileSubWindows ()));
 
   windowProperties =q3NewAction (tr ("Properties"), tr ("&Properties"),QKeySequence (tr ("Ctrl+F3")), this, 0, true);
   windowProperties->setStatusTip (tr ("Show or hide the Property Inspector"));
@@ -2521,7 +2523,24 @@ void F4lmApp::slotfileSaveAsTemplate () {}
 void F4lmApp::slotfileRevert () {}
 void F4lmApp::slotfileImport ()
 {
-  QString fileName1 = QFileDialog::getOpenFileName (this);
+  QFileDialog fd (this);
+  fd.setWindowTitle (tr ("Import"));
+  fd.setFileMode (QFileDialog::ExistingFile);
+  fd.setOption (QFileDialog::DontUseNativeDialog, true);
+
+  CFilePreview * preview = new CFilePreview (&fd);
+  preview->setMinimumSize (160, 120);
+  if (QGridLayout * layout = qobject_cast < QGridLayout * >(fd.layout ()))
+    layout->addWidget (preview, 1, layout->columnCount (),
+                       layout->rowCount () - 1, 1);
+
+  connect (&fd, SIGNAL (currentChanged (const QString &)),
+           preview, SLOT (previewPath (const QString &)));
+
+  if (fd.exec () != QDialog::Accepted)
+    return;
+
+  QString fileName1 = fd.selectedFiles ().value (0);
   if (fileName1.isEmpty () || !slotCurrentView ())
     return;
 
@@ -2604,13 +2623,17 @@ void F4lmApp::mousePressEvent(QMouseEvent* e){
 
 void CFilePreview::previewUrl (const QUrl & u)
 {
-  QString path = u.path ();
+  previewPath (u.toLocalFile ());
+}
+
+void CFilePreview::previewPath (const QString & path)
+{
   QPixmap pix (path);
   if (pix.isNull ())
     setText ("This is not a image");
   else
   {
-    pix = pix.scaled (width (), height ());
+    pix = pix.scaled (width (), height (), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     setPixmap (pix);
   }
 }

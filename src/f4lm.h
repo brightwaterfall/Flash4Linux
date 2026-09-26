@@ -760,13 +760,16 @@ private:
 
 };
 
-class CFilePreview:public QLabel, public QFilePreview
+class CFilePreview:public QLabel
 {
+  Q_OBJECT
 public:
     CFilePreview (QWidget * parent = 0):QLabel (parent)
     {}
 
+public slots:
     void previewUrl (const QUrl & u);
+    void previewPath (const QString & path);
 };
 
 #endif

@@ -32,9 +32,6 @@ int main (int argc, char *argv[]) {
 
     QApplication a (argc, argv);
     a.setStyle (QStyleFactory::create ("Windows"));
-	QPixmap pixmap( (const char **)F4L_Logo1_xpm );
-    QSplashScreen *splash = new QSplashScreen( pixmap );
-    splash->show();
     a.setFont (QFont ("sans", 8));
     QTranslator tor (0);
 
@@ -56,6 +53,10 @@ int main (int argc, char *argv[]) {
     }
     }
     a.installTranslator (&tor);
+
+	QPixmap pixmap( (const char **)F4L_Logo1_xpm );
+    QSplashScreen *splash = new QSplashScreen( pixmap );
+    splash->show();
     F4lmApp * f4lm = new F4lmApp ();
     f4lm->setWindowIcon (QPixmap ((const char **) main_ico_xpm));
     /*if(argc>1)
